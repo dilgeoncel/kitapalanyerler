@@ -1,0 +1,160 @@
+// Firebase Blog Depolama Sistemi
+// 1. Firebase Console'da proje oluşturun: https://console.firebase.google.com
+// 2. Firestore Database'i etkinleştirin
+// 3. Web app ekleyin ve config bilgilerini alın
+
+// Firebase config (Firebase Console'dan alacağınız)
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "YOUR_APP_ID"
+};
+
+// Firebase import (HTML head'e ekleyin)
+/*
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+*/
+
+// Firebase başlatma
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// Blog yazısı kaydetme (mevcut handleBlogSubmit fonksiyonunu güncelleyin)
+async function saveBlogToFirebase(title, content, imageUrl) {
+    try {
+        const docRef = await db.collection('blog-posts').add({
+            title: title,
+            content: content,
+            imageUrl: imageUrl || '',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            author: 'Admin'
+        });
+        
+        console.log('Blog yazısı kaydedildi:', docRef.id);
+        return docRef.id;
+    } catch (error) {
+        console.error('Kaydetme hatası:', error);
+        throw error;
+    }
+}
+
+// Blog yazılarını yükleme (sayfa açıldığında çalıştırın)
+async function loadBlogsFromFirebase() {
+    try {
+        const querySnapshot = await db.collection('blog-posts')
+            .orderBy('createdAt', 'desc')
+            .get();
+        
+        const blogPosts = document.getElementById('blog-posts');
+        blogPosts.innerHTML = ''; // Mevcut içeriği temizle
+        
+        if (querySnapshot.empty) {
+            // Boş durum mesajı göster
+            blogPosts.innerHTML = `
+                <div class="empty-state" style="text-align: center; padding: 4rem; color: #7f8c8d;">
+                    <h2 style="color: #95a5a6; margin-bottom: 1rem;">📚 Blog Yazıları</h2>
+                    <p>Henüz blog yazısı bulunmuyor.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const postId = doc.id;
+            
+            // Blog post HTML'ini oluştur
+            const postDiv = document.createElement('div');
+            postDiv.className = 'blog-post';
+            postDiv.setAttribute('data-id', postId);
+            
+            const previewText = data.content.substring(0, 150) + 
+                               (data.content.length > 150 ? '...' : '');
+            const showReadMore = data.content.length > 150;
+            const imageHtml = data.imageUrl ? 
+                `<img src="${data.imageUrl}" alt="${data.title}" onclick="openImageModal('${data.imageUrl}', '${data.title}')" title="Fotoğrafı büyütmek için tıklayın">` : '';
+            
+            postDiv.innerHTML = `
+                <div class="blog-post-content">
+                    ${imageHtml}
+                    <h3>${data.title}</h3>
+                    <div class="blog-post-meta">${data.createdAt ? data.createdAt.toDate().toLocaleDateString('tr-TR') : 'Tarih bilinmiyor'} - ${data.author}</div>
+                    <p class="blog-preview">${previewText}</p>
+                    <div class="full-content" style="display:none;">${data.content}</div>
+                    ${showReadMore ? `<a href="#" class="read-more-link" onclick="showFullPost('${postId}'); return false;">Devamını Oku &rarr;</a>` : ''}
+                </div>
+            `;
+            
+            blogPosts.appendChild(postDiv);
+        });
+        
+    } catch (error) {
+        console.error('Blog yükleme hatası:', error);
+    }
+}
+
+// Blog yazısı silme
+async function deleteBlogFromFirebase(postId) {
+    try {
+        await db.collection('blog-posts').doc(postId).delete();
+        console.log('Blog yazısı silindi:', postId);
+    } catch (error) {
+        console.error('Silme hatası:', error);
+        throw error;
+    }
+}
+
+// Blog yazısı güncelleme
+async function updateBlogInFirebase(postId, title, content, imageUrl) {
+    try {
+        await db.collection('blog-posts').doc(postId).update({
+            title: title,
+            content: content,
+            imageUrl: imageUrl || '',
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        console.log('Blog yazısı güncellendi:', postId);
+    } catch (error) {
+        console.error('Güncelleme hatası:', error);
+        throw error;
+    }
+}
+
+// Sayfa yüklendiğinde blog yazılarını getir
+document.addEventListener('DOMContentLoaded', function() {
+    loadBlogsFromFirebase();
+});
+
+// Güncellenen handleBlogSubmit fonksiyonu
+async function handleBlogSubmit() {
+    const title = document.getElementById('post-title').value;
+    const content = document.getElementById('post-content').value;
+    const imageUrl = getCurrentImageSrc();
+
+    if (!title || !content) {
+        alert('Lütfen başlık ve içerik alanlarını doldurun!');
+        return;
+    }
+
+    try {
+        // Firebase'e kaydet
+        const postId = await saveBlogToFirebase(title, content, imageUrl);
+        
+        // Formu temizle
+        document.getElementById('post-title').value = '';
+        document.getElementById('post-content').value = '';
+        clearImage();
+        
+        // Sayfayı yenile
+        await loadBlogsFromFirebase();
+        
+        alert('✅ Blog yazısı başarıyla eklendi ve kaydedildi!');
+        
+    } catch (error) {
+        alert('❌ Blog yazısı kaydedilirken hata oluştu: ' + error.message);
+    }
+}
