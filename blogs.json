@@ -1,12 +1,28 @@
 {
   "posts": [
     {
-      "id": "test-blog-1",
-      "title": "Test Blog Yazısı",
-      "content": "Bu bir test blog yazısıdır. Herkes bu yazıyı görebilmelidir. İstanbul'da kitap satış hizmetlerimiz hakkında bilgi almak için WhatsApp hattımızdan iletişime geçebilirsiniz.",
+      "id": "blog-1",
+      "title": "İstanbul'da En Değerli Kitap Türleri",
+      "content": "Antika kitaplar, ilk baskılar ve nadir eserler İstanbul'da en yüksek fiyatları alıyor. Özellikle Osmanlıca kitaplar, imzalı eserler ve akademik yayınlar için özel değerlendirme yapıyoruz. Üniversite kitapları da güncel baskıları ile iyi fiyatlara alınıyor. Tıp, hukuk, mühendislik kitapları özellikle rağbet görüyor. Koleksiyonunuzda değerli kitaplar olduğunu düşünüyorsanız uzman ekibimizle iletişime geçin. Evden kitap toplama hizmetimiz İstanbul genelinde ücretsizdir.",
       "imageUrl": "https://kultur.istanbul/gorsel/2022/03/kapak.png",
-      "date": "23.01.2025",
-      "author": "Test Admin"
+      "date": "22.01.2025",
+      "author": "Kitap Uzmanı"
+    },
+    {
+      "id": "blog-2", 
+      "title": "Evden Kitap Toplama Servisi Nasıl Çalışır?",
+      "content": "WhatsApp üzerinden +90 532 688 66 35 numaralı hattımızdan iletişime geçtikten sonra uzman ekibimiz adresinize gelir. Kitaplarınızın değer tespitini yapar ve anında nakit ödeme yapar. Hizmet tamamen ücretsizdir ve İstanbul genelinde geçerlidir. Kadıköy, Beşiktaş, Şişli, Bakırköy gibi merkezi ilçelerde aynı gün hizmet imkânı da bulunmaktadır.",
+      "imageUrl": "https://kultur.istanbul/gorsel/2022/03/kapak.png",
+      "date": "20.01.2025", 
+      "author": "Kitap Uzmanı"
+    },
+    {
+      "id": "blog-3",
+      "title": "Hangi Kitaplar Daha Değerli? Fiyat Rehberi",
+      "content": "İkinci el kitap fiyatları kitabın durumu, nadir olma derecesi, yayın yılı ve piyasa talebi gibi faktörlere göre belirlenir. En değerli kategoriler: Antika ve nadir kitaplar, imzalı eserler, ilk baskı kitaplar, Osmanlıca kitaplar, güncel üniversite ders kitapları, tıp hukuk mühendislik kitapları. Fiyat belirleyen faktörler: Kitabın fiziksel durumu, yayın tarihi ve baskı sayısı, yazarın popülerliği, piyasadaki bulunabilirlik. Ücretsiz değerlendirme için kitap fotoğraflarınızı WhatsApp'tan gönderebilirsiniz.",
+      "imageUrl": "https://kultur.istanbul/gorsel/2022/03/kapak.png",
+      "date": "18.01.2025",
+      "author": "Değerlendirme Uzmanı"
     }
   ]
 }
