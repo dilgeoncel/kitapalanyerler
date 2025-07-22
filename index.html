@@ -1422,96 +1422,388 @@
             alert('👋 Başarıyla çıkış yaptınız!');
         }
 
-        // Blog yazısı ekleme - dosya upload özelliği eklendi
-        function handleBlogSubmit() {
-            const title = document.getElementById('post-title').value;
-            const content = document.getElementById('post-content').value;
-            const imageUrl = getCurrentImageSrc(); // Yeni fonksiyon kullanılıyor
-
-            if (!title || !content) {
-                alert('Lütfen başlık ve içerik alanlarını doldurun!');
-                return;
+        // localStorage Blog Saklama Sistemi - Blog verilerini kalıcı hale getirir
+        
+        // Blog verilerini localStorage'dan yükle
+        function loadBlogsFromStorage() {
+            try {
+                const savedBlogs = localStorage.getItem('kitap-blog-posts');
+                const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
+                
+                const blogPosts = document.getElementById('blog-posts');
+                const adminBlogList = document.getElementById('admin-blog-list');
+                
+                // Blog sayfasını temizle
+                blogPosts.innerHTML = '';
+                // Admin listesini temizle  
+                adminBlogList.innerHTML = '';
+                
+                if (blogs.length === 0) {
+                    showEmptyBlogState();
+                    showEmptyAdminState();
+                    return;
+                }
+                
+                // Blog yazılarını göster
+                blogs.forEach(blog => {
+                    addBlogToPage(blog);
+                    addBlogToAdminPanel(blog);
+                });
+                
+            } catch (error) {
+                console.error('Blog yükleme hatası:', error);
+                showEmptyBlogState();
             }
+        }
 
-            // "Blog Yazısı Bulunamadı" mesajını kaldır
-            const emptyState = document.querySelector('#blog-posts .empty-state');
-            if (emptyState) emptyState.remove();
+        // Blog'u localStorage'a kaydet
+        function saveBlogToStorage(blog) {
+            try {
+                const savedBlogs = localStorage.getItem('kitap-blog-posts');
+                const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
+                
+                // Yeni blog'u ekle
+                blogs.unshift(blog); // En başa ekle (en yeni üstte)
+                
+                // localStorage'a kaydet
+                localStorage.setItem('kitap-blog-posts', JSON.stringify(blogs));
+                
+                return blog.id;
+            } catch (error) {
+                console.error('Blog kaydetme hatası:', error);
+                throw error;
+            }
+        }
 
-            // Yönetici panelindeki boş mesajı da kaldır
-            const adminEmptyState = document.querySelector('#admin-blog-list .empty-state');
-            if (adminEmptyState) adminEmptyState.remove();
+        // Blog'u localStorage'dan sil
+        function deleteBlogFromStorage(blogId) {
+            try {
+                const savedBlogs = localStorage.getItem('kitap-blog-posts');
+                const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
+                
+                // Blog'u filtrele (sil)
+                const updatedBlogs = blogs.filter(blog => blog.id !== blogId);
+                
+                // localStorage'a kaydet
+                localStorage.setItem('kitap-blog-posts', JSON.stringify(updatedBlogs));
+                
+            } catch (error) {
+                console.error('Blog silme hatası:', error);
+                throw error;
+            }
+        }
 
-            // Fotoğraf HTML'i oluştur - error handling ile
-            const imageHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}" onclick="openImageModal('${imageUrl}', '${title}')" title="Fotoğrafı büyütmek için tıklayın" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'" style="max-width: 100%; height: auto; object-fit: cover;"><div style="display: none; background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px; text-align: center; border: 1px solid #f5c6cb;">📷 Fotoğraf yüklenemedi</div>` : '';
+        // Blog'u localStorage'da güncelle
+        function updateBlogInStorage(blogId, newTitle, newContent, newImage) {
+            try {
+                const savedBlogs = localStorage.getItem('kitap-blog-posts');
+                const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
+                
+                // Blog'u bul ve güncelle
+                const blogIndex = blogs.findIndex(blog => blog.id === blogId);
+                if (blogIndex !== -1) {
+                    blogs[blogIndex].title = newTitle;
+                    blogs[blogIndex].content = newContent;
+                    blogs[blogIndex].imageUrl = newImage;
+                    blogs[blogIndex].updatedAt = new Date().toISOString();
+                }
+                
+                // localStorage'a kaydet
+                localStorage.setItem('kitap-blog-posts', JSON.stringify(blogs));
+                
+            } catch (error) {
+                console.error('Blog güncelleme hatası:', error);
+                throw error;
+            }
+        }
 
-            // Yeni blog yazısını ekle
+        // Sayfaya blog ekle
+        function addBlogToPage(blog) {
             const blogPosts = document.getElementById('blog-posts');
             const newPost = document.createElement('div');
-            const postId = 'post-' + Date.now();
             newPost.className = 'blog-post';
-            newPost.setAttribute('data-id', postId);
-            const previewText = content.substring(0, 150) + (content.length > 150 ? '...' : '');
-            const showReadMore = content.length > 150;
+            newPost.setAttribute('data-id', blog.id);
+            
+            const previewText = blog.content.substring(0, 150) + (blog.content.length > 150 ? '...' : '');
+            const showReadMore = blog.content.length > 150;
+            const imageHtml = blog.imageUrl ? 
+                `<img src="${blog.imageUrl}" alt="${blog.title}" onclick="openImageModal('${blog.imageUrl}', '${blog.title}')" title="Fotoğrafı büyütmek için tıklayın" onerror="this.style.display='none';">` : '';
+            
             newPost.innerHTML = `
                 <div class="blog-post-content">
                     ${imageHtml}
-                    <h3>${title}</h3>
-                    <div class="blog-post-meta">${new Date().toLocaleDateString('tr-TR')} - Admin</div>
+                    <h3>${blog.title}</h3>
+                    <div class="blog-post-meta">${blog.date} - ${blog.author}</div>
                     <p class="blog-preview">${previewText}</p>
-                    <div class="full-content" style="display:none;">${content}</div>
-                    ${showReadMore ? `<a href="#" class="read-more-link" onclick="showFullPost('${postId}'); return false;">Devamını Oku &rarr;</a>` : ''}
+                    <div class="full-content" style="display:none;">${blog.content}</div>
+                    ${showReadMore ? `<a href="#" class="read-more-link" onclick="showFullPost('${blog.id}'); return false;">Devamını Oku &rarr;</a>` : ''}
                 </div>
             `;
-            blogPosts.insertBefore(newPost, blogPosts.firstChild);
             
-            // Yönetici listesine de ekle
-            const adminImageHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; float: right; cursor: pointer;" onclick="openImageModal('${imageUrl}', '${title}')" title="Fotoğrafı büyütmek için tıklayın">` : '';
+            blogPosts.appendChild(newPost);
+        }
+
+        // Admin paneline blog ekle
+        function addBlogToAdminPanel(blog) {
+            const adminImageHtml = blog.imageUrl ? 
+                `<img src="${blog.imageUrl}" alt="${blog.title}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; float: right; cursor: pointer;" onclick="openImageModal('${blog.imageUrl}', '${blog.title}')" title="Fotoğrafı büyütmek için tıklayın">` : '';
+            
             const adminList = document.getElementById('admin-blog-list');
             const newAdminPost = document.createElement('div');
             newAdminPost.className = 'post-item';
+            newAdminPost.setAttribute('data-blog-id', blog.id);
             
-            // HTML'i oluştur
             newAdminPost.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div style="flex: 1;">
-                        <h4>${title}</h4>
-                        <p style="color: #7f8c8d; font-size: 0.9rem;">${new Date().toLocaleDateString('tr-TR')} - Admin</p>
+                        <h4>${blog.title}</h4>
+                        <p style="color: #7f8c8d; font-size: 0.9rem;">${blog.date} - ${blog.author}</p>
                         <div class="post-actions">
-                            <button type="button" class="edit-post-btn btn" style="margin-right: 0.5rem;">✏️ Düzenle</button>
-                            <button type="button" class="delete-post-btn btn btn-danger">🗑️ Sil</button>
+                            <button type="button" class="edit-post-btn btn" style="margin-right: 0.5rem;" onclick="editStoredPost('${blog.id}')">✏️ Düzenle</button>
+                            <button type="button" class="delete-post-btn btn btn-danger" onclick="deleteStoredPost('${blog.id}')">🗑️ Sil</button>
                         </div>
                     </div>
                     ${adminImageHtml}
                 </div>
             `;
             
-            // DOM'a ekle
-            adminList.insertBefore(newAdminPost, adminList.firstChild);
+            adminList.appendChild(newAdminPost);
+        }
+
+        // Boş durumları göster
+        function showEmptyBlogState() {
+            const blogPosts = document.getElementById('blog-posts');
+            blogPosts.innerHTML = `
+                <div class="empty-state" style="text-align: center; padding: 4rem; color: #7f8c8d;">
+                    <h2 style="color: #95a5a6; margin-bottom: 1rem;">📚 Blog Yazıları</h2>
+                    <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">Henüz blog yazısı bulunmuyor.</p>
+                    <p style="margin: 0;">Yönetici panelinden ilk blog yazımızı ekleyeceğiz.</p>
+                </div>
+            `;
+        }
+
+        function showEmptyAdminState() {
+            const adminBlogList = document.getElementById('admin-blog-list');
+            adminBlogList.innerHTML = `
+                <div class="empty-state" style="text-align: center; padding: 2rem; color: #7f8c8d; background: #f8f9fa; border-radius: 10px; border: 2px dashed #ddd;">
+                    <h4 style="color: #95a5a6; margin-bottom: 1rem;">📝 Blog Yazısı Bulunamadı</h4>
+                    <p style="margin-bottom: 0.5rem;">Henüz hiçbir blog yazısı eklenmemiş.</p>
+                    <p style="margin: 0; font-size: 0.9rem;">Yukarıdaki formdan ilk blog yazınızı ekleyebilirsiniz.</p>
+                </div>
+            `;
+        }
+
+        // localStorage'dan blog sil
+        function deleteStoredPost(blogId) {
+            if (!confirm('Bu blog yazısını silmek istediğinizden emin misiniz?')) {
+                return;
+            }
             
-            // Event listener'ları DOM'a eklendikten sonra ekle
-            setTimeout(() => {
-                const deleteBtn = newAdminPost.querySelector('.delete-post-btn');
-                const editBtn = newAdminPost.querySelector('.edit-post-btn');
+            try {
+                // localStorage'dan sil
+                deleteBlogFromStorage(blogId);
                 
-                if (deleteBtn) {
-                    deleteBtn.addEventListener('click', function(e) {
-                        deletePost(e.target);
-                    });
-                }
+                // Sayfadan kaldır
+                const blogPost = document.querySelector(`[data-id="${blogId}"]`);
+                const adminPost = document.querySelector(`[data-blog-id="${blogId}"]`);
                 
-                if (editBtn) {
-                    editBtn.addEventListener('click', function(e) {
-                        editPost(e.target);
-                    });
-                }
-            }, 50);
+                if (blogPost) blogPost.remove();
+                if (adminPost) adminPost.remove();
+                
+                // Eğer hiç blog kalmadıysa boş durumu göster
+                const remainingBlogs = document.querySelectorAll('#blog-posts .blog-post');
+                const remainingAdminBlogs = document.querySelectorAll('#admin-blog-list .post-item');
+                
+                if (remainingBlogs.length === 0) showEmptyBlogState();
+                if (remainingAdminBlogs.length === 0) showEmptyAdminState();
+                
+                alert('🗑️ Blog yazısı başarıyla silindi!');
+                
+            } catch (error) {
+                alert('❌ Blog silme sırasında hata oluştu: ' + error.message);
+            }
+        }
+
+        // localStorage'daki blog'u düzenle
+        function editStoredPost(blogId) {
+            // Blog verilerini localStorage'dan al
+            const savedBlogs = localStorage.getItem('kitap-blog-posts');
+            const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
+            const blog = blogs.find(b => b.id === blogId);
             
-            // Formu temizle
-            document.getElementById('post-title').value = '';
-            document.getElementById('post-content').value = '';
-            clearImage(); // Resim verilerini temizle
+            if (!blog) {
+                alert('Blog bulunamadı!');
+                return;
+            }
             
-            alert('✅ Blog yazısı başarıyla eklendi!');
+            // Düzenleme modalı oluştur
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            `;
+            
+            const uniqueId = Date.now();
+            modal.innerHTML = `
+                <div style="
+                    background: white;
+                    padding: 2rem;
+                    border-radius: 10px;
+                    max-width: 600px;
+                    width: 90%;
+                    max-height: 80vh;
+                    overflow-y: auto;
+                ">
+                    <h3 style="margin-bottom: 1rem; color: #2c3e50;">Blog Yazısını Düzenle</h3>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Başlık:</label>
+                        <input type="text" id="edit-title-${uniqueId}" value="${blog.title}" style="
+                            width: 100%;
+                            padding: 0.8rem;
+                            border: 1px solid #ddd;
+                            border-radius: 5px;
+                            font-size: 1rem;
+                        ">
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Fotoğraf URL'i:</label>
+                        <input type="url" id="edit-image-${uniqueId}" value="${blog.imageUrl || ''}" placeholder="https://example.com/resim.jpg" style="
+                            width: 100%;
+                            padding: 0.8rem;
+                            border: 1px solid #ddd;
+                            border-radius: 5px;
+                            font-size: 1rem;
+                        ">
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">İçerik:</label>
+                        <textarea id="edit-content-${uniqueId}" rows="8" style="
+                            width: 100%;
+                            padding: 0.8rem;
+                            border: 1px solid #ddd;
+                            border-radius: 5px;
+                            font-size: 1rem;
+                            resize: vertical;
+                        ">${blog.content}</textarea>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button type="button" onclick="this.closest('div').parentElement.parentElement.remove()" style="
+                            background: #95a5a6;
+                            color: white;
+                            padding: 0.8rem 1.5rem;
+                            border: none;
+                            border-radius: 5px;
+                            cursor: pointer;
+                        ">❌ İptal</button>
+                        <button type="button" onclick="saveEditedStoredPost('${blogId}', '${uniqueId}', this)" style="
+                            background: #3498db;
+                            color: white;
+                            padding: 0.8rem 1.5rem;
+                            border: none;
+                            border-radius: 5px;
+                            cursor: pointer;
+                        ">💾 Kaydet</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            modal.id = 'edit-modal';
+        }
+
+        // Düzenlenmiş blog'u kaydet
+        function saveEditedStoredPost(blogId, uniqueId, button) {
+            const titleInput = document.getElementById(`edit-title-${uniqueId}`);
+            const imageInput = document.getElementById(`edit-image-${uniqueId}`);
+            const contentInput = document.getElementById(`edit-content-${uniqueId}`);
+            
+            if (!titleInput || !contentInput) {
+                alert('❌ Form alanları bulunamadı!');
+                return;
+            }
+            
+            const newTitle = titleInput.value.trim();
+            const newContent = contentInput.value.trim();
+            const newImage = imageInput ? imageInput.value.trim() : '';
+            
+            if (!newTitle || !newContent) {
+                alert('Lütfen başlık ve içerik alanlarını doldurun!');
+                return;
+            }
+            
+            try {
+                // localStorage'da güncelle
+                updateBlogInStorage(blogId, newTitle, newContent, newImage);
+                
+                // Sayfayı yeniden yükle
+                loadBlogsFromStorage();
+                
+                // Modal'ı kapat
+                button.closest('div').parentElement.parentElement.remove();
+                
+                alert('✅ Blog yazısı başarıyla güncellendi!');
+                
+            } catch (error) {
+                alert('❌ Güncelleme sırasında hata oluştu: ' + error.message);
+            }
+        }
+
+        // Blog yazısı ekleme - localStorage ile kalıcı hale getirildi
+        function handleBlogSubmit() {
+            const title = document.getElementById('post-title').value;
+            const content = document.getElementById('post-content').value;
+            const imageUrl = getCurrentImageSrc();
+
+            if (!title || !content) {
+                alert('Lütfen başlık ve içerik alanlarını doldurun!');
+                return;
+            }
+
+            try {
+                // Blog objesi oluştur
+                const blog = {
+                    id: 'blog-' + Date.now(),
+                    title: title,
+                    content: content,
+                    imageUrl: imageUrl || '',
+                    date: new Date().toLocaleDateString('tr-TR'),
+                    author: 'Admin',
+                    createdAt: new Date().toISOString()
+                };
+                
+                // localStorage'a kaydet
+                saveBlogToStorage(blog);
+                
+                // Boş durumları temizle
+                const emptyStates = document.querySelectorAll('.empty-state');
+                emptyStates.forEach(state => state.remove());
+                
+                // Sayfaya ekle
+                addBlogToPage(blog);
+                addBlogToAdminPanel(blog);
+                
+                // Formu temizle
+                document.getElementById('post-title').value = '';
+                document.getElementById('post-content').value = '';
+                clearImage();
+                
+                alert('✅ Blog yazısı başarıyla eklendi ve kaydedildi!');
+                
+            } catch (error) {
+                alert('❌ Blog yazısı kaydedilirken hata oluştu: ' + error.message);
+            }
         }
 
         // Tam blog yazısını göster - resim modal pencerede kaldırıldı
@@ -1629,12 +1921,11 @@
             }
         }
 
-        // Düzenleme fonksiyonu - temizlenmiş versiyon
+        // Düzenleme fonksiyonu - localStorage uyumlu versiyon (eski editPost yerine)
         function editPost(button) {
             // Admin panelindeki post'u bul
             let postItem = button.closest('.post-item');
             
-            // Eğer closest çalışmazsa manuel olarak yukarı çık
             if (!postItem) {
                 let currentElement = button;
                 while (currentElement && !currentElement.classList.contains('post-item')) {
@@ -1648,239 +1939,24 @@
                 return;
             }
             
-            const titleElement = postItem.querySelector('h4');
-            const title = titleElement ? titleElement.textContent.trim() : '';
+            // Blog ID'sini al
+            const blogId = postItem.getAttribute('data-blog-id');
             
-            // Mevcut içeriği bul
-            let currentContent = '';
-            let currentImage = '';
-            const blogPosts = document.querySelectorAll('#blog-posts .blog-post');
-            blogPosts.forEach(post => {
-                const postTitle = post.querySelector('h3').textContent;
-                if (postTitle === title) {
-                    const fullContentDiv = post.querySelector('.full-content');
-                    if (fullContentDiv) {
-                        currentContent = fullContentDiv.textContent;
-                    } else {
-                        const contentP = post.querySelector('.blog-preview');
-                        if (contentP) {
-                            currentContent = contentP.textContent.replace('...', '');
-                        }
-                    }
-                    
-                    const img = post.querySelector('img');
-                    if (img) {
-                        currentImage = img.src;
-                    }
-                }
-            });
-
-            // Düzenleme modalı oluştur
-            const modal = document.createElement('div');
-            modal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.5);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 1000;
-            `;
-            
-            const uniqueId = Date.now();
-            modal.innerHTML = `
-                <div style="
-                    background: white;
-                    padding: 2rem;
-                    border-radius: 10px;
-                    max-width: 600px;
-                    width: 90%;
-                    max-height: 80vh;
-                    overflow-y: auto;
-                ">
-                    <h3 style="margin-bottom: 1rem; color: #2c3e50;">Blog Yazısını Düzenle</h3>
-                    
-                    <div style="margin-bottom: 1rem;">
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Başlık:</label>
-                        <input type="text" id="edit-title-${uniqueId}" value="${title}" style="
-                            width: 100%;
-                            padding: 0.8rem;
-                            border: 1px solid #ddd;
-                            border-radius: 5px;
-                            font-size: 1rem;
-                        ">
-                    </div>
-                    
-                    <div style="margin-bottom: 1rem;">
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Fotoğraf URL'i:</label>
-                        <input type="url" id="edit-image-${uniqueId}" value="${currentImage}" placeholder="https://example.com/resim.jpg" style="
-                            width: 100%;
-                            padding: 0.8rem;
-                            border: 1px solid #ddd;
-                            border-radius: 5px;
-                            font-size: 1rem;
-                        ">
-                    </div>
-                    
-                    <div style="margin-bottom: 1.5rem;">
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">İçerik:</label>
-                        <textarea id="edit-content-${uniqueId}" rows="8" style="
-                            width: 100%;
-                            padding: 0.8rem;
-                            border: 1px solid #ddd;
-                            border-radius: 5px;
-                            font-size: 1rem;
-                            resize: vertical;
-                        ">${currentContent}</textarea>
-                    </div>
-                    
-                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                        <button type="button" class="cancel-edit-btn" style="
-                            background: #95a5a6;
-                            color: white;
-                            padding: 0.8rem 1.5rem;
-                            border: none;
-                            border-radius: 5px;
-                            cursor: pointer;
-                        ">❌ İptal</button>
-                        <button type="button" class="save-edit-btn" style="
-                            background: #3498db;
-                            color: white;
-                            padding: 0.8rem 1.5rem;
-                            border: none;
-                            border-radius: 5px;
-                            cursor: pointer;
-                        ">💾 Kaydet</button>
-                    </div>
-                </div>
-            `;
-            
-            // Modal'ı DOM'a ekle
-            document.body.appendChild(modal);
-            modal.id = 'edit-modal';
-            
-            // DOM'a eklendikten sonra event listener'ları ekle
-            setTimeout(() => {
-                const cancelBtn = modal.querySelector('.cancel-edit-btn');
-                const saveBtn = modal.querySelector('.save-edit-btn');
-                
-                if (cancelBtn) {
-                    cancelBtn.addEventListener('click', function() {
-                        modal.remove();
-                    });
-                }
-                
-                if (saveBtn) {
-                    saveBtn.addEventListener('click', function() {
-                        // Form alanlarını bul
-                        const titleInput = document.getElementById(`edit-title-${uniqueId}`);
-                        const imageInput = document.getElementById(`edit-image-${uniqueId}`);
-                        const contentInput = document.getElementById(`edit-content-${uniqueId}`);
-                        
-                        if (titleInput && contentInput) {
-                            const newTitle = titleInput.value.trim();
-                            const newContent = contentInput.value.trim();
-                            const newImage = imageInput ? imageInput.value.trim() : '';
-                            
-                            if (!newTitle || !newContent) {
-                                alert('Lütfen başlık ve içerik alanlarını doldurun!');
-                                return;
-                            }
-                            
-                            // Kaydetme işlemini başlat
-                            saveEditedPost(title, newTitle, newContent, newImage, modal);
-                        } else {
-                            alert('❌ Form alanları bulunamadı!');
-                        }
-                    });
-                }
-            }, 100);
-        }
-
-        // Düzenlenmiş yazıyı kaydet - fotoğraf modal özelliği eklendi
-        function saveEditedPost(originalTitle, newTitle, newContent, newImage, modal) {
-            try {
-                // Admin panelinde güncelle
-                const adminPosts = document.querySelectorAll('#admin-blog-list .post-item');
-                adminPosts.forEach(post => {
-                    const postTitle = post.querySelector('h4').textContent.trim();
-                    if (postTitle === originalTitle) {
-                        post.querySelector('h4').textContent = newTitle;
-                        
-                        // Fotoğrafı güncelle - modal özelliği ile
-                        const existingImg = post.querySelector('img');
-                        if (newImage) {
-                            if (existingImg) {
-                                existingImg.src = newImage;
-                                existingImg.alt = newTitle;
-                                existingImg.onclick = function() { openImageModal(newImage, newTitle); };
-                            } else {
-                                const imgHtml = `<img src="${newImage}" alt="${newTitle}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; cursor: pointer;" onclick="openImageModal('${newImage}', '${newTitle}')" title="Fotoğrafı büyütmek için tıklayın">`;
-                                post.querySelector('div').insertAdjacentHTML('beforeend', imgHtml);
-                            }
-                        } else if (existingImg) {
-                            existingImg.remove();
-                        }
-                    }
-                });
-                
-                // Blog sayfasında güncelle
-                const blogPosts = document.querySelectorAll('#blog-posts .blog-post');
-                blogPosts.forEach(post => {
-                    const postTitle = post.querySelector('h3').textContent.trim();
-                    if (postTitle === originalTitle) {
-                        post.querySelector('h3').textContent = newTitle;
-                        
-                        // Preview text güncelle
-                        const previewText = newContent.length > 150 ? newContent.substring(0, 150) + '...' : newContent;
-                        
-                        const previewP = post.querySelector('.blog-preview');
-                        if (previewP) {
-                            previewP.textContent = previewText;
-                        }
-                        
-                        // Full content güncelle
-                        const fullContentDiv = post.querySelector('.full-content');
-                        if (fullContentDiv) {
-                            fullContentDiv.textContent = newContent;
-                        }
-                        
-                        // Fotoğrafı güncelle - modal özelliği ile
-                        const existingImg = post.querySelector('img');
-                        if (newImage) {
-                            if (existingImg) {
-                                existingImg.src = newImage;
-                                existingImg.alt = newTitle;
-                                existingImg.onclick = function() { openImageModal(newImage, newTitle); };
-                                existingImg.title = "Fotoğrafı büyütmek için tıklayın";
-                            } else {
-                                const imgHtml = `<img src="${newImage}" alt="${newTitle}" onclick="openImageModal('${newImage}', '${newTitle}')" title="Fotoğrafı büyütmek için tıklayın">`;
-                                post.querySelector('.blog-post-content').insertAdjacentHTML('afterbegin', imgHtml);
-                            }
-                        } else if (existingImg) {
-                            existingImg.remove();
-                        }
-                    }
-                });
-                
-                // Modal'ı kapat
-                modal.remove();
-                alert('✅ Blog yazısı başarıyla güncellendi!');
-                
-            } catch (error) {
-                alert('❌ Kaydetme sırasında bir hata oluştu!');
+            if (blogId) {
+                // localStorage'dan düzenle
+                editStoredPost(blogId);
+            } else {
+                alert('❌ Bu blog yazısı localStorage ile uyumlu değil!');
             }
         }
 
-        // Post silme - temizlenmiş versiyon
+
+
+        // Post silme - localStorage entegreli versiyon
         function deletePost(button) {
             // Admin panelindeki post'u bul
             let postItem = button.closest('.post-item');
             
-            // Eğer closest çalışmazsa manuel olarak yukarı çık
             if (!postItem) {
                 let currentElement = button;
                 while (currentElement && !currentElement.classList.contains('post-item')) {
@@ -1894,27 +1970,36 @@
                 return;
             }
             
-            // Başlığı al
-            const titleElement = postItem.querySelector('h4');
-            const title = titleElement ? titleElement.textContent.trim() : 'Başlık bulunamadı';
+            // Blog ID'sini al
+            const blogId = postItem.getAttribute('data-blog-id');
             
-            // Admin panelinden sil
-            postItem.remove();
-            
-            // Blog sayfasından da sil
-            const blogPosts = document.querySelectorAll('#blog-posts .blog-post h3');
-            for (let i = 0; i < blogPosts.length; i++) {
-                if (blogPosts[i].textContent.trim() === title) {
-                    blogPosts[i].closest('.blog-post').remove();
-                    break;
+            if (blogId) {
+                // localStorage'dan sil
+                deleteStoredPost(blogId);
+            } else {
+                // Eski method (geçici silme)
+                const titleElement = postItem.querySelector('h4');
+                const title = titleElement ? titleElement.textContent.trim() : 'Başlık bulunamadı';
+                
+                postItem.remove();
+                
+                const blogPosts = document.querySelectorAll('#blog-posts .blog-post h3');
+                for (let i = 0; i < blogPosts.length; i++) {
+                    if (blogPosts[i].textContent.trim() === title) {
+                        blogPosts[i].closest('.blog-post').remove();
+                        break;
+                    }
                 }
+                
+                alert('🗑️ Blog yazısı silindi: ' + title);
             }
-            
-            alert('🗑️ Blog yazısı silindi: ' + title);
         }
 
         // Sayfa yükleme işlemleri
         document.addEventListener('DOMContentLoaded', function() {
+            // Blog yazılarını localStorage'dan yükle
+            loadBlogsFromStorage();
+            
             // Gizli admin ipucunu 10 saniye sonra tamamen gizle
             setTimeout(function() {
                 const adminHint = document.querySelector('[title="Admin Erişimi: Shift + Ctrl + Q"]');
@@ -2002,286 +2087,6 @@
                 logout();
             }
         });
-        // localStorage Blog Saklama Sistemi
-// Mevcut kodunuzdaki blog fonksiyonlarını bu şekilde güncelleyin:
-
-// Blog verilerini localStorage'dan yükle
-function loadBlogsFromStorage() {
-    try {
-        const savedBlogs = localStorage.getItem('kitap-blog-posts');
-        const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
-        
-        const blogPosts = document.getElementById('blog-posts');
-        const adminBlogList = document.getElementById('admin-blog-list');
-        
-        // Blog sayfasını temizle
-        blogPosts.innerHTML = '';
-        // Admin listesini temizle  
-        adminBlogList.innerHTML = '';
-        
-        if (blogs.length === 0) {
-            showEmptyBlogState();
-            showEmptyAdminState();
-            return;
-        }
-        
-        // Blog yazılarını göster
-        blogs.forEach(blog => {
-            addBlogToPage(blog);
-            addBlogToAdminPanel(blog);
-        });
-        
-    } catch (error) {
-        console.error('Blog yükleme hatası:', error);
-        showEmptyBlogState();
-    }
-}
-
-// Blog'u localStorage'a kaydet
-function saveBlogToStorage(blog) {
-    try {
-        const savedBlogs = localStorage.getItem('kitap-blog-posts');
-        const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
-        
-        // Yeni blog'u ekle
-        blogs.unshift(blog); // En başa ekle (en yeni üstte)
-        
-        // localStorage'a kaydet
-        localStorage.setItem('kitap-blog-posts', JSON.stringify(blogs));
-        
-        return blog.id;
-    } catch (error) {
-        console.error('Blog kaydetme hatası:', error);
-        throw error;
-    }
-}
-
-// Blog'u localStorage'dan sil
-function deleteBlogFromStorage(blogId) {
-    try {
-        const savedBlogs = localStorage.getItem('kitap-blog-posts');
-        const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
-        
-        // Blog'u filtrele (sil)
-        const updatedBlogs = blogs.filter(blog => blog.id !== blogId);
-        
-        // localStorage'a kaydet
-        localStorage.setItem('kitap-blog-posts', JSON.stringify(updatedBlogs));
-        
-    } catch (error) {
-        console.error('Blog silme hatası:', error);
-        throw error;
-    }
-}
-
-// Blog'u localStorage'da güncelle
-function updateBlogInStorage(blogId, newTitle, newContent, newImage) {
-    try {
-        const savedBlogs = localStorage.getItem('kitap-blog-posts');
-        const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
-        
-        // Blog'u bul ve güncelle
-        const blogIndex = blogs.findIndex(blog => blog.id === blogId);
-        if (blogIndex !== -1) {
-            blogs[blogIndex].title = newTitle;
-            blogs[blogIndex].content = newContent;
-            blogs[blogIndex].imageUrl = newImage;
-            blogs[blogIndex].updatedAt = new Date().toISOString();
-        }
-        
-        // localStorage'a kaydet
-        localStorage.setItem('kitap-blog-posts', JSON.stringify(blogs));
-        
-    } catch (error) {
-        console.error('Blog güncelleme hatası:', error);
-        throw error;
-    }
-}
-
-// Sayfaya blog ekle
-function addBlogToPage(blog) {
-    const blogPosts = document.getElementById('blog-posts');
-    const newPost = document.createElement('div');
-    newPost.className = 'blog-post';
-    newPost.setAttribute('data-id', blog.id);
-    
-    const previewText = blog.content.substring(0, 150) + (blog.content.length > 150 ? '...' : '');
-    const showReadMore = blog.content.length > 150;
-    const imageHtml = blog.imageUrl ? 
-        `<img src="${blog.imageUrl}" alt="${blog.title}" onclick="openImageModal('${blog.imageUrl}', '${blog.title}')" title="Fotoğrafı büyütmek için tıklayın" onerror="this.style.display='none';">` : '';
-    
-    newPost.innerHTML = `
-        <div class="blog-post-content">
-            ${imageHtml}
-            <h3>${blog.title}</h3>
-            <div class="blog-post-meta">${blog.date} - ${blog.author}</div>
-            <p class="blog-preview">${previewText}</p>
-            <div class="full-content" style="display:none;">${blog.content}</div>
-            ${showReadMore ? `<a href="#" class="read-more-link" onclick="showFullPost('${blog.id}'); return false;">Devamını Oku &rarr;</a>` : ''}
-        </div>
-    `;
-    
-    blogPosts.appendChild(newPost);
-}
-
-// Admin paneline blog ekle
-function addBlogToAdminPanel(blog) {
-    const adminImageHtml = blog.imageUrl ? 
-        `<img src="${blog.imageUrl}" alt="${blog.title}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; float: right; cursor: pointer;" onclick="openImageModal('${blog.imageUrl}', '${blog.title}')" title="Fotoğrafı büyütmek için tıklayın">` : '';
-    
-    const adminList = document.getElementById('admin-blog-list');
-    const newAdminPost = document.createElement('div');
-    newAdminPost.className = 'post-item';
-    newAdminPost.setAttribute('data-blog-id', blog.id);
-    
-    newAdminPost.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div style="flex: 1;">
-                <h4>${blog.title}</h4>
-                <p style="color: #7f8c8d; font-size: 0.9rem;">${blog.date} - ${blog.author}</p>
-                <div class="post-actions">
-                    <button type="button" class="edit-post-btn btn" style="margin-right: 0.5rem;" onclick="editStoredPost('${blog.id}')">✏️ Düzenle</button>
-                    <button type="button" class="delete-post-btn btn btn-danger" onclick="deleteStoredPost('${blog.id}')">🗑️ Sil</button>
-                </div>
-            </div>
-            ${adminImageHtml}
-        </div>
-    `;
-    
-    adminList.appendChild(newAdminPost);
-}
-
-// Boş durumları göster
-function showEmptyBlogState() {
-    const blogPosts = document.getElementById('blog-posts');
-    blogPosts.innerHTML = `
-        <div class="empty-state" style="text-align: center; padding: 4rem; color: #7f8c8d;">
-            <h2 style="color: #95a5a6; margin-bottom: 1rem;">📚 Blog Yazıları</h2>
-            <p>Henüz blog yazısı bulunmuyor.</p>
-        </div>
-    `;
-}
-
-function showEmptyAdminState() {
-    const adminBlogList = document.getElementById('admin-blog-list');
-    adminBlogList.innerHTML = `
-        <div class="empty-state" style="text-align: center; padding: 2rem; color: #7f8c8d;">
-            <h4>📝 Blog Yazısı Bulunamadı</h4>
-            <p>Henüz hiçbir blog yazısı eklenmemiş.</p>
-        </div>
-    `;
-}
-
-// Güncellenmiş handleBlogSubmit fonksiyonu
-function handleBlogSubmit() {
-    const title = document.getElementById('post-title').value;
-    const content = document.getElementById('post-content').value;
-    const imageUrl = getCurrentImageSrc();
-
-    if (!title || !content) {
-        alert('Lütfen başlık ve içerik alanlarını doldurun!');
-        return;
-    }
-
-    try {
-        // Blog objesi oluştur
-        const blog = {
-            id: 'blog-' + Date.now(),
-            title: title,
-            content: content,
-            imageUrl: imageUrl || '',
-            date: new Date().toLocaleDateString('tr-TR'),
-            author: 'Admin',
-            createdAt: new Date().toISOString()
-        };
-        
-        // localStorage'a kaydet
-        saveBlogToStorage(blog);
-        
-        // Boş durumları temizle
-        const emptyStates = document.querySelectorAll('.empty-state');
-        emptyStates.forEach(state => state.remove());
-        
-        // Sayfaya ekle
-        addBlogToPage(blog);
-        addBlogToAdminPanel(blog);
-        
-        // Formu temizle
-        document.getElementById('post-title').value = '';
-        document.getElementById('post-content').value = '';
-        clearImage();
-        
-        alert('✅ Blog yazısı başarıyla eklendi ve kaydedildi!');
-        
-    } catch (error) {
-        alert('❌ Blog yazısı kaydedilirken hata oluştu: ' + error.message);
-    }
-}
-
-// localStorage'dan blog sil
-function deleteStoredPost(blogId) {
-    if (!confirm('Bu blog yazısını silmek istediğinizden emin misiniz?')) {
-        return;
-    }
-    
-    try {
-        // localStorage'dan sil
-        deleteBlogFromStorage(blogId);
-        
-        // Sayfadan kaldır
-        const blogPost = document.querySelector(`[data-id="${blogId}"]`);
-        const adminPost = document.querySelector(`[data-blog-id="${blogId}"]`);
-        
-        if (blogPost) blogPost.remove();
-        if (adminPost) adminPost.remove();
-        
-        // Eğer hiç blog kalmadıysa boş durumu göster
-        const remainingBlogs = document.querySelectorAll('#blog-posts .blog-post');
-        const remainingAdminBlogs = document.querySelectorAll('#admin-blog-list .post-item');
-        
-        if (remainingBlogs.length === 0) showEmptyBlogState();
-        if (remainingAdminBlogs.length === 0) showEmptyAdminState();
-        
-        alert('🗑️ Blog yazısı başarıyla silindi!');
-        
-    } catch (error) {
-        alert('❌ Blog silme sırasında hata oluştu: ' + error.message);
-    }
-}
-
-// localStorage'daki blog'u düzenle
-function editStoredPost(blogId) {
-    // Mevcut editPost fonksiyonunuz çalışacak
-    // Sadece kaydetme kısmını güncelleyin
-    
-    // Blog verilerini localStorage'dan al
-    const savedBlogs = localStorage.getItem('kitap-blog-posts');
-    const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
-    const blog = blogs.find(b => b.id === blogId);
-    
-    if (!blog) {
-        alert('Blog bulunamadı!');
-        return;
-    }
-    
-    // Düzenleme modalını aç (mevcut editPost fonksiyonunu kullan)
-    // Burada mevcut editPost fonksiyonunuzu çağırabilirsiniz
-    // editPost fonksiyonunu blogId parametresi ile güncelleyebilirsiniz
-}
-
-// Sayfa yüklendiğinde blog'ları yükle
-document.addEventListener('DOMContentLoaded', function() {
-    // Mevcut DOMContentLoaded event'inizin içine ekleyin:
-    loadBlogsFromStorage();
-    
-    // Gizli admin ipucunu 10 saniye sonra gizle (mevcut kod)
-    setTimeout(function() {
-        const adminHint = document.querySelector('[title="Admin Erişimi: Shift + Ctrl + Q"]');
-        if (adminHint) {
-            adminHint.style.display = 'none';
-        }
-    }, 10000);
-});
     </script>
 </body>
 </html>
