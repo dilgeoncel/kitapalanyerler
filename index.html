@@ -995,14 +995,7 @@
             <div class="blog-container">
                 <h1 style="text-align: center; margin-bottom: 2rem; color: #2c3e50;">Blog Yazıları</h1>
                 <div id="blog-posts" class="blog-posts">
-                    <div class="empty-state" style="text-align: center; padding: 4rem; color: #7f8c8d;">
-                        <h2 style="color: #95a5a6; margin-bottom: 1rem;">📚 Blog Yazıları</h2>
-                        <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">Henüz blog yazısı bulunmuyor.</p>
-                        <p style="margin: 0;">Yönetici panelinden ilk blog yazımızı ekleyeceğiz.</p>
-                        <p style="font-size: 0.9rem; color: #bdc3c7; margin-top: 1rem;">
-                            💡 İpucu: Blog fotoğrafları tıklanabilir olacak ve büyük boyutta görüntülenebilecek
-                        </p>
-                    </div>
+                    <!-- Talimatları ve ipucu kaldırıldı, sadece blog yazıları veya boş durum gösterilecek -->
                 </div>
             </div>
         </div>
@@ -1253,7 +1246,7 @@
                     "@type": "Offer",
                     "itemOffered": {
                         "@type": "Service",
-                        "name": "Üniversite Kitapları Alım",
+                                                                      "name": "Üniversite Kitapları Alım",
                         "description": "Kullanılmış ders kitapları satın alma"
                     }
                 }
@@ -1464,39 +1457,34 @@
 
         // JSON Dosyası ile Blog Sistemi - Herkes Görebilir
         
-        // JSON dosyasından blog'ları yükle - temiz versiyon
+        // JSON dosyasından blog'ları yükle - JSON hatası için düzeltildi
         async function loadBlogsFromJSON() {
             try {
                 const response = await fetch('blogs.json?v=' + Date.now());
                 if (!response.ok) {
                     throw new Error('Blog dosyası yüklenemedi');
                 }
-                
                 const data = await response.json();
-                const blogs = data.posts || [];
-                
+                let blogs = [];
+                // JSON hatası düzeltme: posts dizisi yoksa boş dizi kullan
+                if (Array.isArray(data.posts)) {
+                    blogs = data.posts;
+                } else if (Array.isArray(data)) {
+                    blogs = data;
+                }
                 const blogPosts = document.getElementById('blog-posts');
                 const adminBlogList = document.getElementById('admin-blog-list');
-                
-                // Blog sayfasını temizle
                 blogPosts.innerHTML = '';
-                // Admin listesini temizle  
-                if (adminBlogList) {
-                    adminBlogList.innerHTML = '';
-                }
-                
+                if (adminBlogList) adminBlogList.innerHTML = '';
                 if (blogs.length === 0) {
                     showEmptyBlogState();
                     if (adminBlogList) showEmptyAdminState();
                     return;
                 }
-                
-                // Blog yazılarını göster
                 blogs.forEach(blog => {
                     addBlogToPage(blog);
                     if (adminBlogList) addBlogToAdminPanel(blog);
                 });
-                
             } catch (error) {
                 console.error('Blog yükleme hatası:', error);
                 showEmptyBlogState();
@@ -1829,8 +1817,6 @@
 
         // GitHub API ile otomatik blog yazma sistemi
         
-        // GitHub API ile otomatik blog yazma sistemi
-        
         // GitHub Personal Access Token'ı kontrol et
         function getGitHubToken() {
             return localStorage.getItem('github-token');
@@ -2059,24 +2045,14 @@ Token'ınızı aşağıya yapıştırın:`;
             }
         }
 
-        // Boş durumları göster - örnek bloglar kaldırıldı
+        // Boş durumları göster - sadeleştirilmiş versiyon
         function showEmptyBlogState() {
             const blogPosts = document.getElementById('blog-posts');
             blogPosts.innerHTML = `
                 <div class="empty-state" style="text-align: center; padding: 4rem; color: #7f8c8d;">
                     <h2 style="color: #95a5a6; margin-bottom: 1rem;">📚 Blog Yazıları</h2>
                     <p style="font-size: 1.1rem; margin-bottom: 1rem;">Henüz hiçbir blog yazısı eklenmemiş.</p>
-                    <p style="margin-bottom: 1.5rem; color: #95a5a6;">Admin panelinden ilk blog yazınızı ekleyebilirsiniz.</p>
-                    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; margin-top: 2rem; border-left: 4px solid #3498db;">
-                        <h4 style="color: #2c3e50; margin-bottom: 1rem;">🎯 Blog Nasıl Eklenir?</h4>
-                        <ol style="text-align: left; color: #34495e; line-height: 1.6; max-width: 400px; margin: 0 auto;">
-                            <li><strong>Shift + Ctrl + Q</strong> ile admin paneline girin</li>
-                            <li><strong>Blog formunu</strong> doldurun</li>
-                            <li><strong>JSON verisini</strong> kopyalayın</li>
-                            <li><strong>GitHub'da blogs.json</strong> dosyasını güncelleyin</li>
-                            <li><strong>Değişiklikleri</strong> kaydedin</li>
-                        </ol>
-                    </div>
+                    <p style="margin: 0; color: #95a5a5;">Yakında blog yazılarımızı paylaşacağız.</p>
                 </div>
             `;
         }
@@ -2241,143 +2217,12 @@ Token'ınızı aşağıya yapıştırın:`;
             }
         }
 
-
-
-
-
-        // Post silme - localStorage entegreli versiyon
-        function deletePost(button) {
-            // Admin panelindeki post'u bul
-            let postItem = button.closest('.post-item');
-            
-            if (!postItem) {
-                let currentElement = button;
-                while (currentElement && !currentElement.classList.contains('post-item')) {
-                    currentElement = currentElement.parentElement;
-                }
-                postItem = currentElement;
-            }
-            
-            if (!postItem) {
-                alert('❌ Post elementi bulunamadı!');
-                return;
-            }
-            
-            // Blog ID'sini al
-            const blogId = postItem.getAttribute('data-blog-id');
-            
-            if (blogId) {
-                // localStorage'dan sil
-                deleteStoredPost(blogId);
-            } else {
-                // Eski method (geçici silme)
-                const titleElement = postItem.querySelector('h4');
-                const title = titleElement ? titleElement.textContent.trim() : 'Başlık bulunamadı';
-                
-                postItem.remove();
-                
-                const blogPosts = document.querySelectorAll('#blog-posts .blog-post h3');
-                for (let i = 0; i < blogPosts.length; i++) {
-                    if (blogPosts[i].textContent.trim() === title) {
-                        blogPosts[i].closest('.blog-post').remove();
-                        break;
-                    }
-                }
-                
-                alert('🗑️ Blog yazısı silindi: ' + title);
-            }
-        }
-
-        // Sayfa yükleme işlemleri - JSON blog sistemi ile
-        document.addEventListener('DOMContentLoaded', function() {
-            // Blog yazılarını JSON dosyasından yükle
-            loadBlogsFromJSON();
-            
-            // Gizli admin ipucunu 10 saniye sonra tamamen gizle
-            setTimeout(function() {
-                const adminHint = document.querySelector('[title="Admin Erişimi: Shift + Ctrl + Q"]');
-                if (adminHint) {
-                    adminHint.style.display = 'none';
-                }
-            }, 10000); // 10 saniye
-        });
-
-        // Resim yükleme fonksiyonları
-        let currentImageData = null;
-
-        function handleImageUpload(input) {
-            const file = input.files[0];
-            if (!file) return;
-
-            // Dosya türü kontrolü
-            if (!file.type.startsWith('image/')) {
-                alert('❌ Lütfen sadece resim dosyası seçin!');
-                input.value = '';
-                return;
-            }
-
-            // Dosya boyutu kontrolü (5MB limit)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('❌ Resim dosyası 5MB\'dan küçük olmalıdır!');
-                input.value = '';
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                currentImageData = e.target.result;
-                showImagePreview(currentImageData, file.name);
-                
-                // URL alanını temizle
-                document.getElementById('post-image-url').value = '';
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function showImagePreview(imageSrc, fileName) {
-            const preview = document.getElementById('image-preview');
-            const previewImg = document.getElementById('preview-img');
-            
-            previewImg.src = imageSrc;
-            previewImg.alt = fileName;
-            preview.style.display = 'block';
-        }
-
-        function clearImage() {
-            currentImageData = null;
-            document.getElementById('post-image-file').value = '';
-            document.getElementById('post-image-url').value = '';
-            document.getElementById('image-preview').style.display = 'none';
-        }
-
-        function getCurrentImageSrc() {
-            // Önce yüklenen dosyayı kontrol et
-            if (currentImageData) {
-                return currentImageData;
-            }
-            
-            // Sonra URL'i kontrol et
-            const urlInput = document.getElementById('post-image-url');
-            if (urlInput && urlInput.value.trim()) {
-                return urlInput.value.trim();
-            }
-            
-            return null;
-        }
-
-        // Klavye kısayolları
+        // Klavye kısayolu ile admin giriş ekranı aç (Shift + Ctrl + Q)
         document.addEventListener('keydown', function(e) {
-            // Gizli yönetici girişi için kısayol (Shift + Ctrl + Q)
-            if (e.shiftKey && e.ctrlKey && e.key.toLowerCase() === 'q') {
-                e.preventDefault(); // Sayfa kapanmasını engelle
-                showPage('admin-login');
-                return;
-            }
-            
-            // Hızlı çıkış için kısayol (Ctrl + Shift + L) - admin girişliyken
-            if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'l' && isAdminLoggedIn) {
+            // Windows ve çoğu tarayıcıda: e.ctrlKey, e.shiftKey, e.key === 'Q' veya 'q'
+            if (e.ctrlKey && e.shiftKey && (e.key === 'Q' || e.key === 'q')) {
                 e.preventDefault();
-                logout();
+                showPage('admin-login');
             }
         });
     </script>
