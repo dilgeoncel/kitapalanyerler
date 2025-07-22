@@ -1050,7 +1050,7 @@
                     <h4 style="color: #1976d2; margin-bottom: 0.5rem;">🔗 GitHub API Durumu</h4>
                     <p id="github-status" style="margin-bottom: 1rem; color: #424242; font-size: 0.9rem;">Token durumu kontrol ediliyor...</p>
                     <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                        <button onclick="updateGitHubStatus()" style="
+                        <button onclick="checkGitHubToken()" style="
                             background: #2196f3;
                             color: white;
                             border: none;
@@ -1354,7 +1354,7 @@
                 // Admin paneline geçerken blog listesini yükle
                 if (pageId === 'admin-panel') {
                     loadBlogsFromJSON();
-                    updateGitHubStatus();
+                    setTimeout(checkGitHubToken, 100); // Token durumunu kontrol et
                 }
             }
         }
@@ -1414,40 +1414,88 @@
         }
 
         function setGitHubToken() {
-            const token = prompt(`GitHub Personal Access Token'ınızı girin:\n\n1. GitHub.com > Settings > Developer settings > Personal access tokens > Tokens (classic)\n2. "Generate new token (classic)" tıklayın\n3. "repo" yetkisini seçin\n4. Token'ı kopyalayıp buraya yapıştırın\n\nToken:`);
+            const instructions = `
+GitHub Personal Access Token oluşturmak için:
+
+1. GitHub.com > Settings > Developer settings > Personal access tokens > Tokens (classic)
+2. "Generate new token (classic)" butonuna tıklayın
+3. Token adı: "Blog Management" 
+4. "repo" yetkisini seçin (Contents ve Metadata dahil)
+5. "Generate token" butonuna tıklayın
+6. Token'ı kopyalayın (Sadece bir kez gösterilir!)
+
+Token'ınızı aşağıya yapıştırın:`;
+            
+            const token = prompt(instructions);
             
             if (token && token.trim()) {
                 localStorage.setItem('github-token', token.trim());
-                alert('✅ GitHub Token kaydedildi! Artık blog yazılarınız otomatik olarak JSON dosyasına eklenecek.');
-                updateGitHubStatus();
+                alert('✅ GitHub Token kaydedildi!\n\nArtık blog yazılarınız otomatik olarak blogs.json dosyasına eklenecek.');
+                checkGitHubToken(); // Durumu güncelle
                 return true;
             }
             return false;
         }
 
         function clearGitHubToken() {
-            localStorage.removeItem('github-token');
-            alert('🗑️ GitHub Token silindi. Manuel olarak JSON dosyasını güncellemeniz gerekecek.');
-            updateGitHubStatus();
+            const confirmed = confirm('GitHub Token\'ı silmek istediğinizden emin misiniz?\n\nBu işlemden sonra blog yazıları manuel olarak JSON dosyasına eklenmelidir.');
+            
+            if (confirmed) {
+                localStorage.removeItem('github-token');
+                alert('🗑️ GitHub Token silindi.\n\nManuel olarak JSON dosyasını güncellemeniz gerekecek.');
+                checkGitHubToken(); // Durumu güncelle
+            }
         }
 
-        function updateGitHubStatus() {
+        // GitHub Token durumunu kontrol et ve göster
+        function checkGitHubToken() {
             const token = getGitHubToken();
             const statusElement = document.getElementById('github-status');
             
-            if (statusElement) {
-                if (token) {
-                    statusElement.innerHTML = `
-                        <span style="color: #4caf50;">✅ <strong>GitHub Token mevcut</strong></span><br>
-                        <small>Blog yazıları otomatik olarak blogs.json dosyasına eklenecek.</small>
-                    `;
-                } else {
-                    statusElement.innerHTML = `
-                        <span style="color: #f44336;">❌ <strong>GitHub Token bulunamadı</strong></span><br>
-                        <small>Blog yazıları manuel olarak JSON dosyasına eklenmelidir.</small>
-                    `;
-                }
+            if (!statusElement) return;
+            
+            if (token) {
+                // Token var, API'yi test et
+                testGitHubAPI(token).then(isValid => {
+                    if (isValid) {
+                        statusElement.innerHTML = `
+                            <span style="color: #4caf50;">✅ <strong>GitHub Token çalışıyor</strong></span><br>
+                            <small>Blog yazıları otomatik olarak blogs.json dosyasına eklenecek.</small>
+                        `;
+                    } else {
+                        statusElement.innerHTML = `
+                            <span style="color: #ff9800;">⚠️ <strong>GitHub Token geçersiz</strong></span><br>
+                            <small>Token'ınızı kontrol edin veya yeni token oluşturun.</small>
+                        `;
+                    }
+                });
+            } else {
+                statusElement.innerHTML = `
+                    <span style="color: #f44336;">❌ <strong>GitHub Token bulunamadı</strong></span><br>
+                    <small>Blog yazıları manuel olarak JSON dosyasına eklenmelidir.</small>
+                `;
             }
+        }
+
+        // GitHub API'yi test et
+        async function testGitHubAPI(token) {
+            try {
+                const response = await fetch('https://api.github.com/repos/dilgeoncel/kitapalanyerler/contents/blogs.json', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                return response.status === 200 || response.status === 404; // 404 = dosya yok ama erişim var
+            } catch (error) {
+                console.error('GitHub API test hatası:', error);
+                return false;
+            }
+        }
+
+        function updateGitHubStatus() {
+            checkGitHubToken();
         }
 
         // Türkçe karakter güvenli Base64 encode fonksiyonu
