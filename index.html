@@ -2002,6 +2002,286 @@
                 logout();
             }
         });
+        // localStorage Blog Saklama Sistemi
+// Mevcut kodunuzdaki blog fonksiyonlarını bu şekilde güncelleyin:
+
+// Blog verilerini localStorage'dan yükle
+function loadBlogsFromStorage() {
+    try {
+        const savedBlogs = localStorage.getItem('kitap-blog-posts');
+        const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
+        
+        const blogPosts = document.getElementById('blog-posts');
+        const adminBlogList = document.getElementById('admin-blog-list');
+        
+        // Blog sayfasını temizle
+        blogPosts.innerHTML = '';
+        // Admin listesini temizle  
+        adminBlogList.innerHTML = '';
+        
+        if (blogs.length === 0) {
+            showEmptyBlogState();
+            showEmptyAdminState();
+            return;
+        }
+        
+        // Blog yazılarını göster
+        blogs.forEach(blog => {
+            addBlogToPage(blog);
+            addBlogToAdminPanel(blog);
+        });
+        
+    } catch (error) {
+        console.error('Blog yükleme hatası:', error);
+        showEmptyBlogState();
+    }
+}
+
+// Blog'u localStorage'a kaydet
+function saveBlogToStorage(blog) {
+    try {
+        const savedBlogs = localStorage.getItem('kitap-blog-posts');
+        const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
+        
+        // Yeni blog'u ekle
+        blogs.unshift(blog); // En başa ekle (en yeni üstte)
+        
+        // localStorage'a kaydet
+        localStorage.setItem('kitap-blog-posts', JSON.stringify(blogs));
+        
+        return blog.id;
+    } catch (error) {
+        console.error('Blog kaydetme hatası:', error);
+        throw error;
+    }
+}
+
+// Blog'u localStorage'dan sil
+function deleteBlogFromStorage(blogId) {
+    try {
+        const savedBlogs = localStorage.getItem('kitap-blog-posts');
+        const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
+        
+        // Blog'u filtrele (sil)
+        const updatedBlogs = blogs.filter(blog => blog.id !== blogId);
+        
+        // localStorage'a kaydet
+        localStorage.setItem('kitap-blog-posts', JSON.stringify(updatedBlogs));
+        
+    } catch (error) {
+        console.error('Blog silme hatası:', error);
+        throw error;
+    }
+}
+
+// Blog'u localStorage'da güncelle
+function updateBlogInStorage(blogId, newTitle, newContent, newImage) {
+    try {
+        const savedBlogs = localStorage.getItem('kitap-blog-posts');
+        const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
+        
+        // Blog'u bul ve güncelle
+        const blogIndex = blogs.findIndex(blog => blog.id === blogId);
+        if (blogIndex !== -1) {
+            blogs[blogIndex].title = newTitle;
+            blogs[blogIndex].content = newContent;
+            blogs[blogIndex].imageUrl = newImage;
+            blogs[blogIndex].updatedAt = new Date().toISOString();
+        }
+        
+        // localStorage'a kaydet
+        localStorage.setItem('kitap-blog-posts', JSON.stringify(blogs));
+        
+    } catch (error) {
+        console.error('Blog güncelleme hatası:', error);
+        throw error;
+    }
+}
+
+// Sayfaya blog ekle
+function addBlogToPage(blog) {
+    const blogPosts = document.getElementById('blog-posts');
+    const newPost = document.createElement('div');
+    newPost.className = 'blog-post';
+    newPost.setAttribute('data-id', blog.id);
+    
+    const previewText = blog.content.substring(0, 150) + (blog.content.length > 150 ? '...' : '');
+    const showReadMore = blog.content.length > 150;
+    const imageHtml = blog.imageUrl ? 
+        `<img src="${blog.imageUrl}" alt="${blog.title}" onclick="openImageModal('${blog.imageUrl}', '${blog.title}')" title="Fotoğrafı büyütmek için tıklayın" onerror="this.style.display='none';">` : '';
+    
+    newPost.innerHTML = `
+        <div class="blog-post-content">
+            ${imageHtml}
+            <h3>${blog.title}</h3>
+            <div class="blog-post-meta">${blog.date} - ${blog.author}</div>
+            <p class="blog-preview">${previewText}</p>
+            <div class="full-content" style="display:none;">${blog.content}</div>
+            ${showReadMore ? `<a href="#" class="read-more-link" onclick="showFullPost('${blog.id}'); return false;">Devamını Oku &rarr;</a>` : ''}
+        </div>
+    `;
+    
+    blogPosts.appendChild(newPost);
+}
+
+// Admin paneline blog ekle
+function addBlogToAdminPanel(blog) {
+    const adminImageHtml = blog.imageUrl ? 
+        `<img src="${blog.imageUrl}" alt="${blog.title}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; float: right; cursor: pointer;" onclick="openImageModal('${blog.imageUrl}', '${blog.title}')" title="Fotoğrafı büyütmek için tıklayın">` : '';
+    
+    const adminList = document.getElementById('admin-blog-list');
+    const newAdminPost = document.createElement('div');
+    newAdminPost.className = 'post-item';
+    newAdminPost.setAttribute('data-blog-id', blog.id);
+    
+    newAdminPost.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="flex: 1;">
+                <h4>${blog.title}</h4>
+                <p style="color: #7f8c8d; font-size: 0.9rem;">${blog.date} - ${blog.author}</p>
+                <div class="post-actions">
+                    <button type="button" class="edit-post-btn btn" style="margin-right: 0.5rem;" onclick="editStoredPost('${blog.id}')">✏️ Düzenle</button>
+                    <button type="button" class="delete-post-btn btn btn-danger" onclick="deleteStoredPost('${blog.id}')">🗑️ Sil</button>
+                </div>
+            </div>
+            ${adminImageHtml}
+        </div>
+    `;
+    
+    adminList.appendChild(newAdminPost);
+}
+
+// Boş durumları göster
+function showEmptyBlogState() {
+    const blogPosts = document.getElementById('blog-posts');
+    blogPosts.innerHTML = `
+        <div class="empty-state" style="text-align: center; padding: 4rem; color: #7f8c8d;">
+            <h2 style="color: #95a5a6; margin-bottom: 1rem;">📚 Blog Yazıları</h2>
+            <p>Henüz blog yazısı bulunmuyor.</p>
+        </div>
+    `;
+}
+
+function showEmptyAdminState() {
+    const adminBlogList = document.getElementById('admin-blog-list');
+    adminBlogList.innerHTML = `
+        <div class="empty-state" style="text-align: center; padding: 2rem; color: #7f8c8d;">
+            <h4>📝 Blog Yazısı Bulunamadı</h4>
+            <p>Henüz hiçbir blog yazısı eklenmemiş.</p>
+        </div>
+    `;
+}
+
+// Güncellenmiş handleBlogSubmit fonksiyonu
+function handleBlogSubmit() {
+    const title = document.getElementById('post-title').value;
+    const content = document.getElementById('post-content').value;
+    const imageUrl = getCurrentImageSrc();
+
+    if (!title || !content) {
+        alert('Lütfen başlık ve içerik alanlarını doldurun!');
+        return;
+    }
+
+    try {
+        // Blog objesi oluştur
+        const blog = {
+            id: 'blog-' + Date.now(),
+            title: title,
+            content: content,
+            imageUrl: imageUrl || '',
+            date: new Date().toLocaleDateString('tr-TR'),
+            author: 'Admin',
+            createdAt: new Date().toISOString()
+        };
+        
+        // localStorage'a kaydet
+        saveBlogToStorage(blog);
+        
+        // Boş durumları temizle
+        const emptyStates = document.querySelectorAll('.empty-state');
+        emptyStates.forEach(state => state.remove());
+        
+        // Sayfaya ekle
+        addBlogToPage(blog);
+        addBlogToAdminPanel(blog);
+        
+        // Formu temizle
+        document.getElementById('post-title').value = '';
+        document.getElementById('post-content').value = '';
+        clearImage();
+        
+        alert('✅ Blog yazısı başarıyla eklendi ve kaydedildi!');
+        
+    } catch (error) {
+        alert('❌ Blog yazısı kaydedilirken hata oluştu: ' + error.message);
+    }
+}
+
+// localStorage'dan blog sil
+function deleteStoredPost(blogId) {
+    if (!confirm('Bu blog yazısını silmek istediğinizden emin misiniz?')) {
+        return;
+    }
+    
+    try {
+        // localStorage'dan sil
+        deleteBlogFromStorage(blogId);
+        
+        // Sayfadan kaldır
+        const blogPost = document.querySelector(`[data-id="${blogId}"]`);
+        const adminPost = document.querySelector(`[data-blog-id="${blogId}"]`);
+        
+        if (blogPost) blogPost.remove();
+        if (adminPost) adminPost.remove();
+        
+        // Eğer hiç blog kalmadıysa boş durumu göster
+        const remainingBlogs = document.querySelectorAll('#blog-posts .blog-post');
+        const remainingAdminBlogs = document.querySelectorAll('#admin-blog-list .post-item');
+        
+        if (remainingBlogs.length === 0) showEmptyBlogState();
+        if (remainingAdminBlogs.length === 0) showEmptyAdminState();
+        
+        alert('🗑️ Blog yazısı başarıyla silindi!');
+        
+    } catch (error) {
+        alert('❌ Blog silme sırasında hata oluştu: ' + error.message);
+    }
+}
+
+// localStorage'daki blog'u düzenle
+function editStoredPost(blogId) {
+    // Mevcut editPost fonksiyonunuz çalışacak
+    // Sadece kaydetme kısmını güncelleyin
+    
+    // Blog verilerini localStorage'dan al
+    const savedBlogs = localStorage.getItem('kitap-blog-posts');
+    const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
+    const blog = blogs.find(b => b.id === blogId);
+    
+    if (!blog) {
+        alert('Blog bulunamadı!');
+        return;
+    }
+    
+    // Düzenleme modalını aç (mevcut editPost fonksiyonunu kullan)
+    // Burada mevcut editPost fonksiyonunuzu çağırabilirsiniz
+    // editPost fonksiyonunu blogId parametresi ile güncelleyebilirsiniz
+}
+
+// Sayfa yüklendiğinde blog'ları yükle
+document.addEventListener('DOMContentLoaded', function() {
+    // Mevcut DOMContentLoaded event'inizin içine ekleyin:
+    loadBlogsFromStorage();
+    
+    // Gizli admin ipucunu 10 saniye sonra gizle (mevcut kod)
+    setTimeout(function() {
+        const adminHint = document.querySelector('[title="Admin Erişimi: Shift + Ctrl + Q"]');
+        if (adminHint) {
+            adminHint.style.display = 'none';
+        }
+    }, 10000);
+});
     </script>
 </body>
 </html>
