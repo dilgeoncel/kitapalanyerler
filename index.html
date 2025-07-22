@@ -1246,7 +1246,7 @@
                     "@type": "Offer",
                     "itemOffered": {
                         "@type": "Service",
-                                                                      "name": "Üniversite Kitapları Alım",
+                                               "name": "Üniversite Kitapları Alım",
                         "description": "Kullanılmış ders kitapları satın alma"
                     }
                 }
@@ -1993,56 +1993,8 @@ Token'ınızı aşağıya yapıştırın:`;
                 createdAt: new Date().toISOString()
             };
 
-            // Loading göster
-            const submitBtn = document.getElementById('blog-submit-btn');
-            const originalText = submitBtn.textContent;
-            submitBtn.textContent = '⏳ GitHub\'a kaydediliyor...';
-            submitBtn.disabled = true;
-
-            try {
-                // GitHub'a otomatik eklemeyi dene
-                const autoAdded = await updateBlogsJSON(blog);
-                
-                if (autoAdded) {
-                    // Başarıyla eklendi
-                    alert('🎉 Blog yazısı başarıyla eklendi!\n\n✅ Otomatik olarak blogs.json dosyasına kaydedildi.\n🔄 Sayfa 5 saniye sonra yenilenecek.');
-                    
-                    // Formu temizle
-                    document.getElementById('post-title').value = '';
-                    document.getElementById('post-content').value = '';
-                    clearImage();
-                    
-                    // 5 saniye sonra sayfayı yenile
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 5000);
-                    
-                } else {
-                    // Manuel ekleme - JSON göster
-                    const emptyStates = document.querySelectorAll('.empty-state');
-                    emptyStates.forEach(state => state.remove());
-                    
-                    addBlogToPage(blog);
-                    addBlogToAdminPanel(blog);
-                    
-                    // Formu temizle
-                    document.getElementById('post-title').value = '';
-                    document.getElementById('post-content').value = '';
-                    clearImage();
-                    
-                    // JSON formatında göster
-                    const jsonData = JSON.stringify(blog, null, 2);
-                    alert('⚠️ Otomatik ekleme başarısız!\n\nManuel olarak blogs.json dosyasını güncellemeniz gerekiyor.');
-                    showCopyModal(jsonData, 'Manuel Ekleme - Blog JSON Verisi');
-                }
-                
-            } catch (error) {
-                alert('❌ Blog ekleme sırasında hata oluştu: ' + error.message);
-            } finally {
-                // Loading kaldır
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-            }
+            // Otomatik ekleme
+            await updateBlogsJSON(blog);
         }
 
         // Boş durumları göster - sadeleştirilmiş versiyon
