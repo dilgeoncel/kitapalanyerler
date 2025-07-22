@@ -1045,6 +1045,41 @@
                 <h2 style="text-align: center; margin-bottom: 2rem; color: #2c3e50;">Yönetici Paneli</h2>
                 <button class="btn btn-danger" onclick="logout(); return false;" style="float: right;">🚪 Çıkış Yap</button>
                 
+                <!-- GitHub API Yönetimi -->
+                <div style="background: #e3f2fd; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid #2196f3;">
+                    <h4 style="color: #1976d2; margin-bottom: 0.5rem;">🔗 GitHub API Durumu</h4>
+                    <p id="github-status" style="margin-bottom: 1rem; color: #424242; font-size: 0.9rem;">Token durumu kontrol ediliyor...</p>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button onclick="updateGitHubStatus()" style="
+                            background: #2196f3;
+                            color: white;
+                            border: none;
+                            padding: 0.4rem 0.8rem;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            font-size: 0.9rem;
+                        ">🔍 Durumu Kontrol Et</button>
+                        <button onclick="setGitHubToken()" style="
+                            background: #4caf50;
+                            color: white;
+                            border: none;
+                            padding: 0.4rem 0.8rem;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            font-size: 0.9rem;
+                        ">🔑 Token Ayarla</button>
+                        <button onclick="clearGitHubToken()" style="
+                            background: #f44336;
+                            color: white;
+                            border: none;
+                            padding: 0.4rem 0.8rem;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            font-size: 0.9rem;
+                        ">🗑️ Token Sil</button>
+                    </div>
+                </div>
+                
                 <div style="clear: both;"></div>
                 
                 <div class="admin-panel">
@@ -1063,7 +1098,7 @@
                             <label for="post-content">İçerik:</label>
                             <textarea id="post-content" name="post-content" rows="6" required placeholder="Blog yazısı içeriği..."></textarea>
                         </div>
-                        <button type="button" class="btn" onclick="handleBlogSubmit(); return false;" id="blog-submit-btn">📤 Yazıyı Ekle</button>
+                        <button type="button" class="btn" onclick="handleBlogSubmit(); return false;" id="blog-submit-btn">📤 Yazıyı Yayınla</button>
                     </div>
                 </div>
 
@@ -1090,7 +1125,7 @@
                 ikinci el kitap satış fiyatları, antika kitap değer tespiti, üniversite kitapları satmak
             </p>
             <!-- Gizli ipucu - sadece bilenlerin anlayacağı -->
-            <p style="font-size: 0.7rem; color: #7f8c8d; margin-top: 0.5rem;">v2025.1</p>
+            <p style="font-size: 0.7rem; color: #7f8c8d; margin-top: 0.5rem;">v2025.2</p>
         </div>
     </footer>
 
@@ -1319,6 +1354,7 @@
                 // Admin paneline geçerken blog listesini yükle
                 if (pageId === 'admin-panel') {
                     loadBlogsFromJSON();
+                    updateGitHubStatus();
                 }
             }
         }
@@ -1372,9 +1408,202 @@
             alert('👋 Başarıyla çıkış yaptınız!');
         }
 
+        // GitHub Token kontrol fonksiyonları
+        function getGitHubToken() {
+            return localStorage.getItem('github-token');
+        }
+
+        function setGitHubToken() {
+            const token = prompt(`GitHub Personal Access Token'ınızı girin:\n\n1. GitHub.com > Settings > Developer settings > Personal access tokens > Tokens (classic)\n2. "Generate new token (classic)" tıklayın\n3. "repo" yetkisini seçin\n4. Token'ı kopyalayıp buraya yapıştırın\n\nToken:`);
+            
+            if (token && token.trim()) {
+                localStorage.setItem('github-token', token.trim());
+                alert('✅ GitHub Token kaydedildi! Artık blog yazılarınız otomatik olarak JSON dosyasına eklenecek.');
+                updateGitHubStatus();
+                return true;
+            }
+            return false;
+        }
+
+        function clearGitHubToken() {
+            localStorage.removeItem('github-token');
+            alert('🗑️ GitHub Token silindi. Manuel olarak JSON dosyasını güncellemeniz gerekecek.');
+            updateGitHubStatus();
+        }
+
+        function updateGitHubStatus() {
+            const token = getGitHubToken();
+            const statusElement = document.getElementById('github-status');
+            
+            if (statusElement) {
+                if (token) {
+                    statusElement.innerHTML = `
+                        <span style="color: #4caf50;">✅ <strong>GitHub Token mevcut</strong></span><br>
+                        <small>Blog yazıları otomatik olarak blogs.json dosyasına eklenecek.</small>
+                    `;
+                } else {
+                    statusElement.innerHTML = `
+                        <span style="color: #f44336;">❌ <strong>GitHub Token bulunamadı</strong></span><br>
+                        <small>Blog yazıları manuel olarak JSON dosyasına eklenmelidir.</small>
+                    `;
+                }
+            }
+        }
+
+        // Türkçe karakter güvenli Base64 encode fonksiyonu
+        function safeBase64Encode(str) {
+            // UTF-8 karakter kodlaması için TextEncoder kullan
+            const encoder = new TextEncoder();
+            const uint8Array = encoder.encode(str);
+            
+            // Base64'e çevir
+            let binary = '';
+            for (let i = 0; i < uint8Array.length; i++) {
+                binary += String.fromCharCode(uint8Array[i]);
+            }
+            return btoa(binary);
+        }
+
+        // GitHub API ile blogs.json dosyasını güncelle - TÜRKÇE KARAKTER SORUNU DÜZELTİLMİŞ
+        async function updateBlogsJSON(newBlog) {
+            const token = getGitHubToken();
+            if (!token) {
+                const setupToken = confirm('GitHub Token bulunamadı!\n\nOtomatik blog ekleme için token gerekli.\n\nToken ayarlamak ister misiniz?');
+                if (setupToken && setGitHubToken()) {
+                    return updateBlogsJSON(newBlog);
+                }
+                throw new Error('GitHub token bulunamadı');
+            }
+
+            try {
+                // 1. Önce blogs.json dosyasının varlığını kontrol et
+                const getFileResponse = await fetch('https://api.github.com/repos/dilgeoncel/kitapalanyerler/contents/blogs.json', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                let fileData;
+                let currentContent = { posts: [] };
+                let sha;
+
+                if (getFileResponse.status === 404) {
+                    // Dosya yok, yeni oluştur
+                    currentContent.posts = [newBlog];
+                } else if (getFileResponse.ok) {
+                    // Dosya var, mevcut içeriği al
+                    fileData = await getFileResponse.json();
+                    sha = fileData.sha;
+                    
+                    try {
+                        const decodedContent = atob(fileData.content.replace(/\s/g, ''));
+                        currentContent = JSON.parse(decodedContent);
+                        if (!Array.isArray(currentContent.posts)) {
+                            currentContent.posts = [];
+                        }
+                        currentContent.posts.unshift(newBlog);
+                    } catch (error) {
+                        console.error('JSON parse hatası:', error);
+                        currentContent = { posts: [newBlog] };
+                    }
+                } else {
+                    throw new Error(`GitHub API Hatası: ${getFileResponse.status}`);
+                }
+
+                // 2. İçeriği güncelle/oluştur - Türkçe karakter güvenli
+                const updatedContent = JSON.stringify(currentContent, null, 2);
+                const encodedContent = safeBase64Encode(updatedContent);
+
+                // 3. GitHub'a gönder
+                const updateResponse = await fetch('https://api.github.com/repos/dilgeoncel/kitapalanyerler/contents/blogs.json', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Blog eklendi: ${newBlog.title}`,
+                        content: encodedContent,
+                        sha: sha // Dosya varsa SHA gerekli
+                    })
+                });
+
+                if (!updateResponse.ok) {
+                    const errorData = await updateResponse.json();
+                    throw new Error(`GitHub API Güncelleme Hatası: ${updateResponse.status}\n${JSON.stringify(errorData, null, 2)}`);
+                }
+
+                return true;
+
+            } catch (error) {
+                console.error('GitHub API Hatası:', error);
+                // Daha detaylı hata mesajı
+                alert(`❌ Blog eklenirken hata oluştu:\n${error.message}\n\nLütfen:\n1. GitHub token'ınızın doğru olduğunu kontrol edin\n2. Token'ın 'repo' yetkisine sahip olduğundan emin olun\n3. Repository ayarlarını kontrol edin`);
+                throw error;
+            }
+        }
+
+        // Blog yazısı ekleme fonksiyonu - TÜRKÇE KARAKTER DESTEKLİ
+        async function handleBlogSubmit() {
+            const title = document.getElementById('post-title').value;
+            const content = document.getElementById('post-content').value;
+            const imageUrl = document.getElementById('post-image-url').value;
+
+            // Form validasyonu
+            if (!title.trim() || !content.trim()) {
+                alert('❌ Lütfen başlık ve içerik alanlarını doldurun!');
+                return;
+            }
+
+            // Submit butonunu devre dışı bırak
+            const submitBtn = document.getElementById('blog-submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '⏳ Yayınlanıyor...';
+
+            try {
+                // Blog objesi oluştur
+                const blog = {
+                    id: `blog-${Date.now()}`,
+                    title: title.trim(),
+                    content: content.trim(),
+                    imageUrl: imageUrl.trim() || '',
+                    date: new Date().toLocaleDateString('tr-TR'),
+                    author: 'Admin',
+                    createdAt: new Date().toISOString()
+                };
+
+                // GitHub API ile blog'u ekle
+                const result = await updateBlogsJSON(blog);
+
+                if (result) {
+                    alert('✅ Blog yazısı başarıyla eklendi ve yayınlandı!\n\nSayfayı yenileyerek yeni blog yazınızı görebilirsiniz.');
+                    
+                    // Formu temizle
+                    document.getElementById('post-title').value = '';
+                    document.getElementById('post-content').value = '';
+                    document.getElementById('post-image-url').value = '';
+                    
+                    // Blog listesini yenile
+                    setTimeout(() => {
+                        loadBlogsFromJSON();
+                    }, 2000);
+                }
+
+            } catch (error) {
+                console.error('Blog ekleme hatası:', error);
+                alert('❌ Blog eklenirken hata oluştu: ' + error.message);
+            } finally {
+                // Submit butonunu normale döndür
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '📤 Yazıyı Yayınla';
+            }
+        }
+
         // Blog sistemi - JSON dosyası tabanlı
         
-        // JSON dosyasından blog'ları yükle - DÜZELTİLMİŞ VERSİYON
+        // JSON dosyasından blog'ları yükle - TÜRKÇE KARAKTER DESTEKLİ
         async function loadBlogsFromJSON() {
             try {
                 const response = await fetch('blogs.json?v=' + Date.now());
@@ -1427,7 +1656,7 @@
             }
         }
 
-        // Sayfaya blog ekle - DÜZELTİLMİŞ VERSİYON
+        // Sayfaya blog ekle - TÜRKÇE KARAKTER DESTEKLİ
         function addBlogToPage(blog) {
             const blogPosts = document.getElementById('blog-posts');
             if (!blogPosts) return;
@@ -1439,15 +1668,15 @@
             const previewText = blog.content.substring(0, 150) + (blog.content.length > 150 ? '...' : '');
             const showReadMore = blog.content.length > 150;
             const imageHtml = blog.imageUrl ? 
-                `<img src="${blog.imageUrl}" alt="${blog.title}" onclick="openImageModal('${blog.imageUrl}', '${blog.title}')" title="Fotoğrafı büyütmek için tıklayın" onerror="this.style.display='none';">` : '';
+                `<img src="${blog.imageUrl}" alt="${escapeHtml(blog.title)}" onclick="openImageModal('${blog.imageUrl}', '${escapeHtml(blog.title)}')" title="Fotoğrafı büyütmek için tıklayın" onerror="this.style.display='none';">` : '';
             
             newPost.innerHTML = `
                 <div class="blog-post-content">
                     ${imageHtml}
-                    <h3>${blog.title}</h3>
-                    <div class="blog-post-meta">${blog.date} - ${blog.author}</div>
-                    <p class="blog-preview">${previewText}</p>
-                    <div class="full-content" style="display:none;">${blog.content}</div>
+                    <h3>${escapeHtml(blog.title)}</h3>
+                    <div class="blog-post-meta">${escapeHtml(blog.date)} - ${escapeHtml(blog.author)}</div>
+                    <p class="blog-preview">${escapeHtml(previewText)}</p>
+                    <div class="full-content" style="display:none;">${escapeHtml(blog.content)}</div>
                     ${showReadMore ? `<a href="#" class="read-more-link" onclick="showFullPost('${blog.id}'); return false;">Devamını Oku &rarr;</a>` : ''}
                 </div>
             `;
@@ -1455,13 +1684,13 @@
             blogPosts.appendChild(newPost);
         }
 
-        // Admin paneline blog ekle - DÜZELTİLMİŞ VERSİYON
+        // Admin paneline blog ekle - TÜRKÇE KARAKTER DESTEKLİ
         function addBlogToAdminPanel(blog) {
             const adminList = document.getElementById('admin-blog-list');
             if (!adminList) return;
             
             const adminImageHtml = blog.imageUrl ? 
-                `<img src="${blog.imageUrl}" alt="${blog.title}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; float: right; cursor: pointer;" onclick="openImageModal('${blog.imageUrl}', '${blog.title}')" title="Fotoğrafı büyütmek için tıklayın">` : '';
+                `<img src="${blog.imageUrl}" alt="${escapeHtml(blog.title)}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; float: right; cursor: pointer;" onclick="openImageModal('${blog.imageUrl}', '${escapeHtml(blog.title)}')" title="Fotoğrafı büyütmek için tıklayın">` : '';
             
             const newAdminPost = document.createElement('div');
             newAdminPost.className = 'post-item';
@@ -1470,8 +1699,8 @@
             newAdminPost.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div style="flex: 1;">
-                        <h4>${blog.title}</h4>
-                        <p style="color: #7f8c8d; font-size: 0.9rem;">${blog.date} - ${blog.author}</p>
+                        <h4>${escapeHtml(blog.title)}</h4>
+                        <p style="color: #7f8c8d; font-size: 0.9rem;">${escapeHtml(blog.date)} - ${escapeHtml(blog.author)}</p>
                         <div class="post-actions">
                             <button type="button" class="btn" style="margin-right: 0.5rem; background: #17a2b8; color: white;" onclick="showBlogJSON('${blog.id}')">📋 JSON Görüntüle</button>
                             <button type="button" class="btn btn-danger" onclick="deleteBlogInstructions('${blog.id}')">🗑️ Manuel Sil</button>
@@ -1482,6 +1711,13 @@
             `;
             
             adminList.appendChild(newAdminPost);
+        }
+
+        // HTML escape fonksiyonu - XSS koruması
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // Blog JSON'unu göster
@@ -1546,7 +1782,7 @@
                 ">
                     <h3 style="margin-bottom: 1rem; color: #dc3545;">🗑️ Blog Silme Talimatları</h3>
                     <p style="margin-bottom: 1rem; color: #666;">
-                        <strong>"${blog.title}"</strong> adlı blog yazısını silmek için aşağıdaki adımları takip edin:
+                        <strong>"${escapeHtml(blog.title)}"</strong> adlı blog yazısını silmek için aşağıdaki adımları takip edin:
                     </p>
                     
                     <div style="background: #f8d7da; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #dc3545;">
@@ -1618,7 +1854,7 @@
                     max-height: 80vh;
                     overflow-y: auto;
                 ">
-                    <h3 style="margin-bottom: 1rem; color: #2c3e50;">📋 ${title}</h3>
+                    <h3 style="margin-bottom: 1rem; color: #2c3e50;">📋 ${escapeHtml(title)}</h3>
                     <p style="margin-bottom: 1rem; color: #666;">Bu veriyi kopyalayıp blogs.json dosyanıza ekleyebilirsiniz:</p>
                     <textarea readonly style="
                         width: 100%;
@@ -1678,139 +1914,6 @@
             }
         }
 
-        // Blog yazısı ekleme fonksiyonu - YENİ VERSİYON
-        async function handleBlogSubmit() {
-            const title = document.getElementById('post-title').value;
-            const content = document.getElementById('post-content').value;
-            const imageUrl = document.getElementById('post-image-url').value;
-
-            // Form validasyonu
-            if (!title.trim() || !content.trim()) {
-                alert('❌ Lütfen başlık ve içerik alanlarını doldurun!');
-                return;
-            }
-
-            // Submit butonunu devre dışı bırak
-            const submitBtn = document.getElementById('blog-submit-btn');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '⏳ İşleniyor...';
-
-            try {
-                // Blog objesi oluştur
-                const blog = {
-                    id: `blog-${Date.now()}`,
-                    title: title.trim(),
-                    content: content.trim(),
-                    imageUrl: imageUrl.trim() || '',
-                    date: new Date().toLocaleDateString('tr-TR'),
-                    author: 'Admin',
-                    createdAt: new Date().toISOString()
-                };
-
-                // JSON formatında string oluştur
-                const blogJSON = JSON.stringify(blog, null, 2);
-                
-                // Kullanıcıya JSON'u göster ve talimatları ver
-                showAddBlogInstructionsModal(blog, blogJSON);
-                
-                // Formu temizle
-                document.getElementById('post-title').value = '';
-                document.getElementById('post-content').value = '';
-                document.getElementById('post-image-url').value = '';
-
-            } catch (error) {
-                console.error('Blog ekleme hatası:', error);
-                alert('❌ Blog eklenirken hata oluştu: ' + error.message);
-            } finally {
-                // Submit butonunu normale döndür
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '📤 Yazıyı Ekle';
-            }
-        }
-
-        // Blog ekleme talimatları modalı
-        function showAddBlogInstructionsModal(blog, blogJSON) {
-            const modal = document.createElement('div');
-            modal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.5);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 1000;
-            `;
-            
-            modal.innerHTML = `
-                <div style="
-                    background: white;
-                    padding: 2rem;
-                    border-radius: 10px;
-                    max-width: 800px;
-                    width: 95%;
-                    max-height: 85vh;
-                    overflow-y: auto;
-                ">
-                    <h3 style="margin-bottom: 1rem; color: #28a745;">✅ Blog Yazısı Hazırlandı!</h3>
-                    <p style="margin-bottom: 1rem; color: #666;">
-                        <strong>"${blog.title}"</strong> adlı blog yazınız hazırlandı. 
-                        Blog'u yayınlamak için aşağıdaki adımları takip edin:
-                    </p>
-                    
-                    <div style="background: #d4edda; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #28a745;">
-                        <h4 style="color: #155724; margin-bottom: 1rem;">📋 Blog Ekleme Adımları:</h4>
-                        <ol style="color: #155724; line-height: 1.6;">
-                            <li><strong>JSON'u kopyalayın:</strong> Aşağıdaki butona tıklayarak blog verisini kopyalayın</li>
-                            <li><strong>Dosyayı açın:</strong> blogs.json dosyasını bir metin editöründe açın</li>
-                            <li><strong>Yeni blog'u ekleyin:</strong> "posts": [ satırının hemen altına kopyaladığınız veriyi yapıştırın</li>
-                            <li><strong>Virgül ekleyin:</strong> Eğer başka bloglar varsa, yeni blog'un sonuna virgül (,) ekleyin</li>
-                            <li><strong>Dosyayı kaydedin</strong> ve sayfayı yenileyin</li>
-                        </ol>
-                    </div>
-                    
-                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
-                        <h5 style="color: #495057; margin-bottom: 0.5rem;">📝 Hazır JSON Verisi:</h5>
-                        <textarea readonly style="
-                            width: 100%;
-                            height: 200px;
-                            padding: 0.5rem;
-                            border: 1px solid #ddd;
-                            border-radius: 5px;
-                            font-family: monospace;
-                            font-size: 0.8rem;
-                            resize: vertical;
-                        ">${blogJSON}</textarea>
-                    </div>
-                    
-                    <div style="text-align: right;">
-                        <button onclick="copyToClipboard(\`${blogJSON.replace(/`/g, '\\`')}\`)" style="
-                            background: #28a745;
-                            color: white;
-                            border: none;
-                            padding: 0.5rem 1.5rem;
-                            border-radius: 5px;
-                            cursor: pointer;
-                            margin-right: 0.5rem;
-                            font-weight: bold;
-                        ">📋 JSON'u Kopyala</button>
-                        <button onclick="this.closest('div').parentElement.parentElement.remove()" style="
-                            background: #6c757d;
-                            color: white;
-                            border: none;
-                            padding: 0.5rem 1rem;
-                            border-radius: 5px;
-                            cursor: pointer;
-                        ">Kapat</button>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-        }
-
         // Boş durumları göster
         function showEmptyBlogState() {
             const blogPosts = document.getElementById('blog-posts');
@@ -1835,7 +1938,7 @@
                     <p style="margin-bottom: 0.5rem;">Henüz hiçbir blog yazısı eklenmemiş.</p>
                     <p style="margin: 0; font-size: 0.9rem;">
                         Yukarıdaki formu kullanarak yeni blog yazınızı oluşturun.
-                        Blog yazısı eklendikten sonra blogs.json dosyasını manuel olarak güncellemeniz gerekecek.
+                        GitHub token'ınız varsa otomatik olarak JSON dosyası güncellenecek.
                     </p>
                 </div>
             `;
@@ -1880,8 +1983,8 @@
                 ">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
                         <div style="flex: 1;">
-                            <h2 style="color: #2c3e50; margin: 0; font-size: 1.8rem;">${title}</h2>
-                            <p style="color: #7f8c8d; margin: 0.5rem 0 0 0; font-size: 0.95rem;">${meta}</p>
+                            <h2 style="color: #2c3e50; margin: 0; font-size: 1.8rem;">${escapeHtml(title)}</h2>
+                            <p style="color: #7f8c8d; margin: 0.5rem 0 0 0; font-size: 0.95rem;">${escapeHtml(meta)}</p>
                         </div>
                         <button onclick="closeFullPost()" style="
                             background: #e74c3c;
@@ -1905,7 +2008,7 @@
                         color: #2c3e50;
                         text-align: justify;
                         white-space: pre-wrap;
-                    ">${fullContent}</div>
+                    ">${escapeHtml(fullContent)}</div>
                 </div>
             `;
             
@@ -1933,7 +2036,7 @@
             const modal = document.createElement('div');
             modal.className = 'image-modal';
             modal.innerHTML = `
-                <img src="${imageSrc}" alt="${imageAlt}" onclick="event.stopPropagation()">
+                <img src="${imageSrc}" alt="${escapeHtml(imageAlt)}" onclick="event.stopPropagation()">
                 <div class="image-modal-close" onclick="closeImageModal()">&times;</div>
             `;
             
