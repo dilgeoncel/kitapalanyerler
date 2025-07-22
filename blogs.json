@@ -1,14 +1,13 @@
 {
   "posts": [
     {
-      "id": "blog-1721664000000",
-      "title": "Blog Başlığı",
-      "content": "Buraya blog yazınızın içeriğini yazın.",
-      "imageUrl": "https://ornek.com/resim.jpg",
+      "id": "blog-1753196489870",
+      "title": "Gökyüzüne Merdiven",
+      "content": "İnsanoğlu, tarihin başlangıcından bu yana evrenin, yaşamın ve yaşamdan sonrasını anlaşılamayan gizemlerini merak etmiş ve hep gökyüzündeki tanrılara ulaşmanın yollarını aramıştır. Yıllar süren titiz çalışmasının sonucunda, en son arkeolojik keşifleri kadim metinler ve buluntularla birleştiren Zecharia Sitchin, \"Dünya Tarihçesi\" dizisinin bu ikinci kitabında, o efsanevi \"Tanrılar Diyarı\"nın yerini belirliyor ve gerçek yapılma nedenleri, bilinmeyen tarihin derinliklerinde kaybolmuş olan Büyük Piramitler, Sfenks ve diğer gizemli anıtlar hakkında çok şaşırtıcı yeni bilgileri gün ışığına çıkartıyor.\n",
+      "imageUrl": "",
       "date": "22.07.2025",
       "author": "Admin",
-      "createdAt": "2025-07-22T12:00:00.000Z"
+      "createdAt": "2025-07-22T15:01:29.881Z"
     }
-    // Diğer blog yazıları buraya eklenir, her biri virgül ile ayrılır
   ]
 }
