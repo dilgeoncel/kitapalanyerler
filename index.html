@@ -1246,7 +1246,7 @@
                     "@type": "Offer",
                     "itemOffered": {
                         "@type": "Service",
-                                               "name": "Üniversite Kitapları Alım",
+                                                                      "name": "Üniversite Kitapları Alım",
                         "description": "Kullanılmış ders kitapları satın alma"
                     }
                 }
@@ -1903,98 +1903,150 @@ Token'ınızı aşağıya yapıştırın:`;
         async function updateBlogsJSON(newBlog) {
             const token = getGitHubToken();
             if (!token) {
-                const setupToken = confirm('GitHub Token bulunamadı!\n\nOtomatik blog ekleme için GitHub Personal Access Token gerekli.\n\nToken\'ı şimdi ayarlamak ister misiniz?');
+                const setupToken = confirm('GitHub Token bulunamadı!\n\nOtomatik blog ekleme için token gerekli.\n\nToken ayarlamak ister misiniz?');
                 if (setupToken && setGitHubToken()) {
-                    return await updateBlogsJSON(newBlog);
+                    return updateBlogsJSON(newBlog);
                 }
-                return false;
+                throw new Error('GitHub token bulunamadı');
             }
 
             try {
-                // Mevcut blogs.json dosyasını al
-                const getResponse = await fetch('https://api.github.com/repos/dilgeoncel/kitapalanyerler/contents/blogs.json', {
+                // 1. Önce blogs.json dosyasının varlığını kontrol et
+                const getFileResponse = await fetch('https://api.github.com/repos/dilgeoncel/kitapalanyerler/contents/blogs.json', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
-                        'Accept': 'application/vnd.github.v3+json',
+                        'Accept': 'application/vnd.github.v3+json'
                     }
                 });
 
-                if (!getResponse.ok) {
-                    throw new Error(`GitHub API hatası: ${getResponse.status}`);
+                let fileData;
+                let currentContent = { posts: [] };
+                let sha;
+
+                if (getFileResponse.status === 404) {
+                    // Dosya yok, yeni oluştur
+                    currentContent.posts = [newBlog];
+                } else if (getFileResponse.ok) {
+                    // Dosya var, mevcut içeriği al
+                    fileData = await getFileResponse.json();
+                    sha = fileData.sha;
+                    
+                    try {
+                        const decodedContent = atob(fileData.content);
+                        currentContent = JSON.parse(decodedContent);
+                        if (!Array.isArray(currentContent.posts)) {
+                            currentContent.posts = [];
+                        }
+                        currentContent.posts.unshift(newBlog);
+                    } catch (error) {
+                        console.error('JSON parse hatası:', error);
+                        currentContent = { posts: [newBlog] };
+                    }
+                } else {
+                    throw new Error(`GitHub API Hatası: ${getFileResponse.status}`);
                 }
 
-                const fileData = await getResponse.json();
-                const currentContent = JSON.parse(atob(fileData.content));
-                
-                // Yeni blog'u posts dizisinin başına ekle
-                currentContent.posts.unshift(newBlog);
-                
-                // Güncellenmiş JSON'u hazırla
-                const updatedJSON = JSON.stringify(currentContent, null, 2);
-                const encodedContent = btoa(unescape(encodeURIComponent(updatedJSON)));
-                
-                // Dosyayı güncelle
+                // 2. İçeriği güncelle/oluştur
+                const updatedContent = JSON.stringify(currentContent, null, 2);
+                const encodedContent = btoa(unescape(encodeURIComponent(updatedContent)));
+
+                // 3. GitHub'a gönder
                 const updateResponse = await fetch('https://api.github.com/repos/dilgeoncel/kitapalanyerler/contents/blogs.json', {
                     method: 'PUT',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Accept': 'application/vnd.github.v3+json',
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        message: `Yeni blog yazısı eklendi: ${newBlog.title}`,
+                        message: `Blog eklendi: ${newBlog.title}`,
                         content: encodedContent,
-                        sha: fileData.sha
+                        sha: sha // Dosya varsa SHA gerekli
                     })
                 });
 
                 if (!updateResponse.ok) {
                     const errorData = await updateResponse.json();
-                    throw new Error(`Güncelleme hatası: ${errorData.message || updateResponse.status}`);
+                    throw new Error(`GitHub API Güncelleme Hatası: ${updateResponse.status}\n${JSON.stringify(errorData, null, 2)}`);
                 }
 
                 return true;
 
             } catch (error) {
                 console.error('GitHub API Hatası:', error);
-                
-                if (error.message.includes('401') || error.message.includes('403')) {
-                    const retryToken = confirm(`❌ GitHub Token hatası!\n\nToken geçersiz veya yetkisiz.\n\nYeni token girmek ister misiniz?`);
-                    if (retryToken) {
-                        clearGitHubToken();
-                        return await updateBlogsJSON(newBlog);
-                    }
-                }
-                
-                alert(`❌ Otomatik ekleme başarısız: ${error.message}\n\nManuel olarak JSON dosyasını güncelleyebilirsiniz.`);
-                return false;
+                // Daha detaylı hata mesajı
+                alert(`❌ Blog eklenirken hata oluştu:\n${error.message}\n\nLütfen:\n1. GitHub token'ınızın doğru olduğunu kontrol edin\n2. Token'ın 'repo' yetkisine sahip olduğundan emin olun\n3. Repository ayarlarını kontrol edin`);
+                throw error;
             }
         }
 
-        // Blog yazısı ekleme - otomatik GitHub güncellemesi ile
+        // handleBlogSubmit fonksiyonunu da güncelleyelim
         async function handleBlogSubmit() {
             const title = document.getElementById('post-title').value;
             const content = document.getElementById('post-content').value;
-            const imageUrl = getCurrentImageSrc();
+            let imageUrl = '';
 
-            if (!title || !content) {
-                alert('Lütfen başlık ve içerik alanlarını doldurun!');
+            // Form validasyonu
+            if (!title.trim() || !content.trim()) {
+                alert('❌ Lütfen başlık ve içerik alanlarını doldurun!');
                 return;
             }
 
-            // Blog objesi oluştur
-            const blog = {
-                id: 'blog-' + Date.now(),
-                title: title,
-                content: content,
-                imageUrl: imageUrl || '',
-                date: new Date().toLocaleDateString('tr-TR'),
-                author: 'Admin',
-                createdAt: new Date().toISOString()
-            };
+            // Resim URL kontrolü
+            const imageUrlInput = document.getElementById('post-image-url');
+            const previewImg = document.getElementById('preview-img');
+            
+            if (previewImg && previewImg.src && !previewImg.src.includes('data:')) {
+                imageUrl = previewImg.src;
+            } else if (imageUrlInput && imageUrlInput.value.trim()) {
+                imageUrl = imageUrlInput.value.trim();
+            }
 
-            // Otomatik ekleme
-            await updateBlogsJSON(blog);
+            // Submit butonunu devre dışı bırak
+            const submitBtn = document.getElementById('blog-submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '⏳ Yükleniyor...';
+
+            try {
+                // Blog objesi oluştur
+                const blog = {
+                    id: `blog-${Date.now()}`,
+                    title: title.trim(),
+                    content: content.trim(),
+                    imageUrl: imageUrl,
+                    date: new Date().toLocaleDateString('tr-TR'),
+                    author: 'Admin',
+                    createdAt: new Date().toISOString()
+                };
+
+                // GitHub'a gönder
+                const result = await updateBlogsJSON(blog);
+
+                if (result) {
+                    alert('✅ Blog yazısı başarıyla eklendi!\n\nSayfayı yenileyerek yeni blog yazınızı görebilirsiniz.');
+                    
+                    // Formu temizle
+                    document.getElementById('post-title').value = '';
+                    document.getElementById('post-content').value = '';
+                    if (imageUrlInput) imageUrlInput.value = '';
+                    if (document.getElementById('image-preview')) {
+                        document.getElementById('image-preview').style.display = 'none';
+                    }
+                    
+                    // Blog listesini yenile
+                    await loadBlogsFromJSON();
+                    
+                    // Sayfayı blog bölümüne kaydır
+                    document.getElementById('blog').scrollIntoView({ behavior: 'smooth' });
+                }
+
+            } catch (error) {
+                console.error('Blog ekleme hatası:', error);
+            } finally {
+                // Submit butonunu normale döndür
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '📤 Yazıyı Yayınla';
+            }
         }
 
         // Boş durumları göster - sadeleştirilmiş versiyon
@@ -2010,24 +2062,26 @@ Token'ınızı aşağıya yapıştırın:`;
         }
 
         function showEmptyAdminState() {
-            const adminBlogList = document.getElementById('admin-blog-list');
-            if (!adminBlogList) return;
+            const adminList = document.getElementById('admin-blog-list');
+            if (!adminList) return;
             
-            adminBlogList.innerHTML = `
+            adminList.innerHTML = `
                 <div class="empty-state" style="text-align: center; padding: 2rem; color: #7f8c8d; background: #f8f9fa; border-radius: 10px; border: 2px dashed #ddd;">
-                    <h4 style="color: #95a5a6; margin-bottom: 1rem;">📝 Blog Yönetimi</h4>
-                    <p style="margin-bottom: 1rem;">Henüz hiçbir blog yazısı eklenmemiş.</p>
-                    <p style="margin-bottom: 1.5rem; font-size: 0.9rem;">Yukarıdaki formdan ilk blog yazınızı ekleyebilirsiniz.</p>
-                    <div style="margin-top: 1rem; padding: 1rem; background: #e3f2fd; border-radius: 8px; border-left: 4px solid #2196f3;">
-                        <h5 style="color: #1976d2; margin-bottom: 0.5rem;">💡 Blog Ekleme Süreci</h5>
-                        <p style="margin: 0; font-size: 0.9rem; color: #424242; line-height: 1.5;">
-                            1. Yukarıdaki formdan blog oluşturun<br>
-                            2. JSON verisini kopyalayın<br>
-                            3. GitHub'da blogs.json dosyasını düzenleyin<br>
-                            4. Yeni blog'u posts dizisinin başına ekleyin<br>
-                            5. Değişiklikleri kaydedin → Site güncellenir
-                        </p>
-                    </div>
+                    <h4 style="color: #95a5a6; margin-bottom: 1rem;">📝 Blog Yazısı Bulunamadı</h4>
+                    <p style="margin-bottom: 0.5rem;">Henüz hiçbir blog yazısı eklenmemiş.</p>
+                    <p style="margin: 0; font-size: 0.9rem;">
+                        İlk blog yazınızı eklemek için yukarıdaki formu kullanın.
+                    </p>
+                    <p style="margin: 0; font-size: 0.9rem; color: #e74c3c;">
+                        Silme veya düzenleme işlemleri için GitHub'da doğrudan blogs.json dosyasını düzenlemeniz gerekmektedir.
+                    </p>
+                    <p style="margin: 0; font-size: 0.9rem; color: #3498db;">
+                        Blog eklemek için: 1. Yukarıdaki formdan blog oluşturun<br>
+                        2. JSON verisini kopyalayın<br>
+                        3. GitHub'da blogs.json dosyasını düzenleyin<br>
+                        4. Yeni blog'u posts dizisinin başına ekleyin<br>
+                        5. Değişiklikleri kaydedin → Site güncellenir
+                    </p>
                 </div>
             `;
         }
