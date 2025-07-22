@@ -1422,13 +1422,18 @@
             alert('👋 Başarıyla çıkış yaptınız!');
         }
 
-        // localStorage Blog Saklama Sistemi - Blog verilerini kalıcı hale getirir
+        // JSON Dosyası ile Blog Sistemi - Herkes Görebilir
         
-        // Blog verilerini localStorage'dan yükle
-        function loadBlogsFromStorage() {
+        // JSON dosyasından blog'ları yükle
+        async function loadBlogsFromJSON() {
             try {
-                const savedBlogs = localStorage.getItem('kitap-blog-posts');
-                const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
+                const response = await fetch('blogs.json?v=' + Date.now()); // Cache busting
+                if (!response.ok) {
+                    throw new Error('Blog dosyası bulunamadı');
+                }
+                
+                const data = await response.json();
+                const blogs = data.posts || [];
                 
                 const blogPosts = document.getElementById('blog-posts');
                 const adminBlogList = document.getElementById('admin-blog-list');
@@ -1436,85 +1441,57 @@
                 // Blog sayfasını temizle
                 blogPosts.innerHTML = '';
                 // Admin listesini temizle  
-                adminBlogList.innerHTML = '';
+                if (adminBlogList) {
+                    adminBlogList.innerHTML = '';
+                }
                 
                 if (blogs.length === 0) {
                     showEmptyBlogState();
-                    showEmptyAdminState();
+                    if (adminBlogList) showEmptyAdminState();
                     return;
                 }
                 
                 // Blog yazılarını göster
                 blogs.forEach(blog => {
                     addBlogToPage(blog);
-                    addBlogToAdminPanel(blog);
+                    if (adminBlogList) addBlogToAdminPanel(blog);
                 });
                 
             } catch (error) {
                 console.error('Blog yükleme hatası:', error);
                 showEmptyBlogState();
-            }
-        }
-
-        // Blog'u localStorage'a kaydet
-        function saveBlogToStorage(blog) {
-            try {
-                const savedBlogs = localStorage.getItem('kitap-blog-posts');
-                const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
                 
-                // Yeni blog'u ekle
-                blogs.unshift(blog); // En başa ekle (en yeni üstte)
-                
-                // localStorage'a kaydet
-                localStorage.setItem('kitap-blog-posts', JSON.stringify(blogs));
-                
-                return blog.id;
-            } catch (error) {
-                console.error('Blog kaydetme hatası:', error);
-                throw error;
-            }
-        }
-
-        // Blog'u localStorage'dan sil
-        function deleteBlogFromStorage(blogId) {
-            try {
-                const savedBlogs = localStorage.getItem('kitap-blog-posts');
-                const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
-                
-                // Blog'u filtrele (sil)
-                const updatedBlogs = blogs.filter(blog => blog.id !== blogId);
-                
-                // localStorage'a kaydet
-                localStorage.setItem('kitap-blog-posts', JSON.stringify(updatedBlogs));
-                
-            } catch (error) {
-                console.error('Blog silme hatası:', error);
-                throw error;
-            }
-        }
-
-        // Blog'u localStorage'da güncelle
-        function updateBlogInStorage(blogId, newTitle, newContent, newImage) {
-            try {
-                const savedBlogs = localStorage.getItem('kitap-blog-posts');
-                const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
-                
-                // Blog'u bul ve güncelle
-                const blogIndex = blogs.findIndex(blog => blog.id === blogId);
-                if (blogIndex !== -1) {
-                    blogs[blogIndex].title = newTitle;
-                    blogs[blogIndex].content = newContent;
-                    blogs[blogIndex].imageUrl = newImage;
-                    blogs[blogIndex].updatedAt = new Date().toISOString();
+                // Eğer blogs.json yoksa örnek blog'lar göster
+                if (error.message.includes('Blog dosyası bulunamadı')) {
+                    showSampleBlogs();
                 }
-                
-                // localStorage'a kaydet
-                localStorage.setItem('kitap-blog-posts', JSON.stringify(blogs));
-                
-            } catch (error) {
-                console.error('Blog güncelleme hatası:', error);
-                throw error;
             }
+        }
+
+        // Örnek blog yazıları göster (blogs.json yoksa)
+        function showSampleBlogs() {
+            const sampleBlogs = [
+                {
+                    id: 'sample-1',
+                    title: 'İstanbul\'da En Değerli Kitap Türleri',
+                    content: 'Antika kitaplar, ilk baskılar ve nadir eserler İstanbul\'da en yüksek fiyatları alıyor. Özellikle Osmanlıca kitaplar, imzalı eserler ve akademik yayınlar için özel değerlendirme yapıyoruz. Üniversite kitapları da güncel baskıları ile iyi fiyatlara alınıyor. Tıp, hukuk, mühendislik kitapları özellikle rağbet görüyor. Koleksiyonunuzda değerli kitaplar olduğunu düşünüyorsanız uzman ekibimizle iletişime geçin.',
+                    imageUrl: 'https://kultur.istanbul/gorsel/2022/03/kapak.png',
+                    date: '22.01.2025',
+                    author: 'Kitap Uzmanı'
+                },
+                {
+                    id: 'sample-2', 
+                    title: 'Evden Kitap Toplama Servisi Nasıl Çalışır?',
+                    content: 'WhatsApp üzerinden iletişime geçtikten sonra uzman ekibimiz adresinize gelir. Kitaplarınızın değer tespitini yapar ve anında nakit ödeme yapar. Hizmet tamamen ücretsizdir ve İstanbul genelinde geçerlidir. Randevu almak için +90 532 688 66 35 numaralı WhatsApp hattımızı arayabilirsiniz. Aynı gün hizmet imkânı da bulunmaktadır.',
+                    imageUrl: 'https://kultur.istanbul/gorsel/2022/03/kapak.png',
+                    date: '20.01.2025', 
+                    author: 'Kitap Uzmanı'
+                }
+            ];
+            
+            sampleBlogs.forEach(blog => {
+                addBlogToPage(blog);
+            });
         }
 
         // Sayfaya blog ekle
@@ -1545,10 +1522,12 @@
 
         // Admin paneline blog ekle
         function addBlogToAdminPanel(blog) {
+            const adminList = document.getElementById('admin-blog-list');
+            if (!adminList) return;
+            
             const adminImageHtml = blog.imageUrl ? 
                 `<img src="${blog.imageUrl}" alt="${blog.title}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; float: right; cursor: pointer;" onclick="openImageModal('${blog.imageUrl}', '${blog.title}')" title="Fotoğrafı büyütmek için tıklayın">` : '';
             
-            const adminList = document.getElementById('admin-blog-list');
             const newAdminPost = document.createElement('div');
             newAdminPost.className = 'post-item';
             newAdminPost.setAttribute('data-blog-id', blog.id);
@@ -1559,8 +1538,8 @@
                         <h4>${blog.title}</h4>
                         <p style="color: #7f8c8d; font-size: 0.9rem;">${blog.date} - ${blog.author}</p>
                         <div class="post-actions">
-                            <button type="button" class="edit-post-btn btn" style="margin-right: 0.5rem;" onclick="editStoredPost('${blog.id}')">✏️ Düzenle</button>
-                            <button type="button" class="delete-post-btn btn btn-danger" onclick="deleteStoredPost('${blog.id}')">🗑️ Sil</button>
+                            <button type="button" class="btn" style="margin-right: 0.5rem; background: #17a2b8; color: white;" onclick="copyBlogJSON('${blog.id}')">📋 JSON Kopyala</button>
+                            <button type="button" class="btn" style="background: #28a745; color: white;" onclick="downloadBlogAsJSON('${blog.id}')">💾 JSON İndir</button>
                         </div>
                     </div>
                     ${adminImageHtml}
@@ -1570,73 +1549,55 @@
             adminList.appendChild(newAdminPost);
         }
 
-        // Boş durumları göster
-        function showEmptyBlogState() {
-            const blogPosts = document.getElementById('blog-posts');
-            blogPosts.innerHTML = `
-                <div class="empty-state" style="text-align: center; padding: 4rem; color: #7f8c8d;">
-                    <h2 style="color: #95a5a6; margin-bottom: 1rem;">📚 Blog Yazıları</h2>
-                    <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">Henüz blog yazısı bulunmuyor.</p>
-                    <p style="margin: 0;">Yönetici panelinden ilk blog yazımızı ekleyeceğiz.</p>
-                </div>
-            `;
+        // Blog JSON verisini kopyala
+        function copyBlogJSON(blogId) {
+            fetch('blogs.json?v=' + Date.now())
+                .then(response => response.json())
+                .then(data => {
+                    const blog = data.posts.find(b => b.id === blogId);
+                    if (blog) {
+                        const jsonText = JSON.stringify(blog, null, 2);
+                        
+                        // Panoya kopyala
+                        if (navigator.clipboard) {
+                            navigator.clipboard.writeText(jsonText).then(() => {
+                                alert('✅ Blog JSON verisi panoya kopyalandı!\n\nblogs.json dosyasına yapıştırabilirsiniz.');
+                            });
+                        } else {
+                            showCopyModal(jsonText);
+                        }
+                    }
+                })
+                .catch(error => {
+                    alert('❌ Blog verisi alınamadı: ' + error.message);
+                });
         }
 
-        function showEmptyAdminState() {
-            const adminBlogList = document.getElementById('admin-blog-list');
-            adminBlogList.innerHTML = `
-                <div class="empty-state" style="text-align: center; padding: 2rem; color: #7f8c8d; background: #f8f9fa; border-radius: 10px; border: 2px dashed #ddd;">
-                    <h4 style="color: #95a5a6; margin-bottom: 1rem;">📝 Blog Yazısı Bulunamadı</h4>
-                    <p style="margin-bottom: 0.5rem;">Henüz hiçbir blog yazısı eklenmemiş.</p>
-                    <p style="margin: 0; font-size: 0.9rem;">Yukarıdaki formdan ilk blog yazınızı ekleyebilirsiniz.</p>
-                </div>
-            `;
+        // Blog'u JSON dosyası olarak indir
+        function downloadBlogAsJSON(blogId) {
+            fetch('blogs.json?v=' + Date.now())
+                .then(response => response.json())
+                .then(data => {
+                    const blog = data.posts.find(b => b.id === blogId);
+                    if (blog) {
+                        const dataStr = JSON.stringify({posts: [blog]}, null, 2);
+                        const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                        
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(dataBlob);
+                        link.download = `blog-${blog.id}.json`;
+                        link.click();
+                        
+                        alert('✅ Blog JSON dosyası indirildi!');
+                    }
+                })
+                .catch(error => {
+                    alert('❌ Blog indirilemedi: ' + error.message);
+                });
         }
 
-        // localStorage'dan blog sil
-        function deleteStoredPost(blogId) {
-            if (!confirm('Bu blog yazısını silmek istediğinizden emin misiniz?')) {
-                return;
-            }
-            
-            try {
-                // localStorage'dan sil
-                deleteBlogFromStorage(blogId);
-                
-                // Sayfadan kaldır
-                const blogPost = document.querySelector(`[data-id="${blogId}"]`);
-                const adminPost = document.querySelector(`[data-blog-id="${blogId}"]`);
-                
-                if (blogPost) blogPost.remove();
-                if (adminPost) adminPost.remove();
-                
-                // Eğer hiç blog kalmadıysa boş durumu göster
-                const remainingBlogs = document.querySelectorAll('#blog-posts .blog-post');
-                const remainingAdminBlogs = document.querySelectorAll('#admin-blog-list .post-item');
-                
-                if (remainingBlogs.length === 0) showEmptyBlogState();
-                if (remainingAdminBlogs.length === 0) showEmptyAdminState();
-                
-                alert('🗑️ Blog yazısı başarıyla silindi!');
-                
-            } catch (error) {
-                alert('❌ Blog silme sırasında hata oluştu: ' + error.message);
-            }
-        }
-
-        // localStorage'daki blog'u düzenle
-        function editStoredPost(blogId) {
-            // Blog verilerini localStorage'dan al
-            const savedBlogs = localStorage.getItem('kitap-blog-posts');
-            const blogs = savedBlogs ? JSON.parse(savedBlogs) : [];
-            const blog = blogs.find(b => b.id === blogId);
-            
-            if (!blog) {
-                alert('Blog bulunamadı!');
-                return;
-            }
-            
-            // Düzenleme modalı oluştur
+        // Kopyalama modal'ı göster
+        function showCopyModal(text) {
             const modal = document.createElement('div');
             modal.style.cssText = `
                 position: fixed;
@@ -1651,7 +1612,6 @@
                 z-index: 1000;
             `;
             
-            const uniqueId = Date.now();
             modal.innerHTML = `
                 <div style="
                     background: white;
@@ -1662,105 +1622,34 @@
                     max-height: 80vh;
                     overflow-y: auto;
                 ">
-                    <h3 style="margin-bottom: 1rem; color: #2c3e50;">Blog Yazısını Düzenle</h3>
-                    
-                    <div style="margin-bottom: 1rem;">
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Başlık:</label>
-                        <input type="text" id="edit-title-${uniqueId}" value="${blog.title}" style="
-                            width: 100%;
-                            padding: 0.8rem;
-                            border: 1px solid #ddd;
-                            border-radius: 5px;
-                            font-size: 1rem;
-                        ">
-                    </div>
-                    
-                    <div style="margin-bottom: 1rem;">
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Fotoğraf URL'i:</label>
-                        <input type="url" id="edit-image-${uniqueId}" value="${blog.imageUrl || ''}" placeholder="https://example.com/resim.jpg" style="
-                            width: 100%;
-                            padding: 0.8rem;
-                            border: 1px solid #ddd;
-                            border-radius: 5px;
-                            font-size: 1rem;
-                        ">
-                    </div>
-                    
-                    <div style="margin-bottom: 1.5rem;">
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">İçerik:</label>
-                        <textarea id="edit-content-${uniqueId}" rows="8" style="
-                            width: 100%;
-                            padding: 0.8rem;
-                            border: 1px solid #ddd;
-                            border-radius: 5px;
-                            font-size: 1rem;
-                            resize: vertical;
-                        ">${blog.content}</textarea>
-                    </div>
-                    
-                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                        <button type="button" onclick="this.closest('div').parentElement.parentElement.remove()" style="
-                            background: #95a5a6;
+                    <h3 style="margin-bottom: 1rem; color: #2c3e50;">📋 Blog JSON Verisi</h3>
+                    <p style="margin-bottom: 1rem; color: #666;">Bu veriyi kopyalayıp blogs.json dosyanıza ekleyebilirsiniz:</p>
+                    <textarea readonly style="
+                        width: 100%;
+                        height: 300px;
+                        padding: 1rem;
+                        border: 1px solid #ddd;
+                        border-radius: 5px;
+                        font-family: monospace;
+                        font-size: 0.9rem;
+                    ">${text}</textarea>
+                    <div style="text-align: right; margin-top: 1rem;">
+                        <button onclick="this.closest('div').parentElement.parentElement.remove()" style="
+                            background: #6c757d;
                             color: white;
-                            padding: 0.8rem 1.5rem;
                             border: none;
+                            padding: 0.5rem 1rem;
                             border-radius: 5px;
                             cursor: pointer;
-                        ">❌ İptal</button>
-                        <button type="button" onclick="saveEditedStoredPost('${blogId}', '${uniqueId}', this)" style="
-                            background: #3498db;
-                            color: white;
-                            padding: 0.8rem 1.5rem;
-                            border: none;
-                            border-radius: 5px;
-                            cursor: pointer;
-                        ">💾 Kaydet</button>
+                        ">Kapat</button>
                     </div>
                 </div>
             `;
             
             document.body.appendChild(modal);
-            modal.id = 'edit-modal';
         }
 
-        // Düzenlenmiş blog'u kaydet
-        function saveEditedStoredPost(blogId, uniqueId, button) {
-            const titleInput = document.getElementById(`edit-title-${uniqueId}`);
-            const imageInput = document.getElementById(`edit-image-${uniqueId}`);
-            const contentInput = document.getElementById(`edit-content-${uniqueId}`);
-            
-            if (!titleInput || !contentInput) {
-                alert('❌ Form alanları bulunamadı!');
-                return;
-            }
-            
-            const newTitle = titleInput.value.trim();
-            const newContent = contentInput.value.trim();
-            const newImage = imageInput ? imageInput.value.trim() : '';
-            
-            if (!newTitle || !newContent) {
-                alert('Lütfen başlık ve içerik alanlarını doldurun!');
-                return;
-            }
-            
-            try {
-                // localStorage'da güncelle
-                updateBlogInStorage(blogId, newTitle, newContent, newImage);
-                
-                // Sayfayı yeniden yükle
-                loadBlogsFromStorage();
-                
-                // Modal'ı kapat
-                button.closest('div').parentElement.parentElement.remove();
-                
-                alert('✅ Blog yazısı başarıyla güncellendi!');
-                
-            } catch (error) {
-                alert('❌ Güncelleme sırasında hata oluştu: ' + error.message);
-            }
-        }
-
-        // Blog yazısı ekleme - localStorage ile kalıcı hale getirildi
+        // Blog yazısı ekleme - JSON uyarısı ile
         function handleBlogSubmit() {
             const title = document.getElementById('post-title').value;
             const content = document.getElementById('post-content').value;
@@ -1771,26 +1660,22 @@
                 return;
             }
 
+            // Blog objesi oluştur
+            const blog = {
+                id: 'blog-' + Date.now(),
+                title: title,
+                content: content,
+                imageUrl: imageUrl || '',
+                date: new Date().toLocaleDateString('tr-TR'),
+                author: 'Admin',
+                createdAt: new Date().toISOString()
+            };
+            
             try {
-                // Blog objesi oluştur
-                const blog = {
-                    id: 'blog-' + Date.now(),
-                    title: title,
-                    content: content,
-                    imageUrl: imageUrl || '',
-                    date: new Date().toLocaleDateString('tr-TR'),
-                    author: 'Admin',
-                    createdAt: new Date().toISOString()
-                };
-                
-                // localStorage'a kaydet
-                saveBlogToStorage(blog);
-                
-                // Boş durumları temizle
+                // Geçici olarak sayfaya ekle
                 const emptyStates = document.querySelectorAll('.empty-state');
                 emptyStates.forEach(state => state.remove());
                 
-                // Sayfaya ekle
                 addBlogToPage(blog);
                 addBlogToAdminPanel(blog);
                 
@@ -1799,11 +1684,85 @@
                 document.getElementById('post-content').value = '';
                 clearImage();
                 
-                alert('✅ Blog yazısı başarıyla eklendi ve kaydedildi!');
+                // JSON formatında göster
+                const jsonData = JSON.stringify(blog, null, 2);
+                
+                alert('✅ Blog yazısı oluşturuldu!\n\n⚠️ ÖNEMLİ: Bu sadece geçicidir.\n\nHerkesin görmesi için blogs.json dosyasını GitHub\'da düzenleyin.');
+                
+                // JSON verisini göster
+                showCopyModal(jsonData);
                 
             } catch (error) {
-                alert('❌ Blog yazısı kaydedilirken hata oluştu: ' + error.message);
+                alert('❌ Blog yazısı oluşturulurken hata oluştu: ' + error.message);
             }
+        }
+
+        // Boş durumları göster
+        function showEmptyBlogState() {
+            const blogPosts = document.getElementById('blog-posts');
+            blogPosts.innerHTML = `
+                <div class="empty-state" style="text-align: center; padding: 4rem; color: #7f8c8d;">
+                    <h2 style="color: #95a5a6; margin-bottom: 1rem;">📚 Blog Yazıları</h2>
+                    <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">Blog yazıları yükleniyor...</p>
+                    <p style="margin: 0;">blogs.json dosyasından blog yazıları alınıyor.</p>
+                </div>
+            `;
+        }
+
+        function showEmptyAdminState() {
+            const adminBlogList = document.getElementById('admin-blog-list');
+            if (!adminBlogList) return;
+            
+            adminBlogList.innerHTML = `
+                <div class="empty-state" style="text-align: center; padding: 2rem; color: #7f8c8d; background: #f8f9fa; border-radius: 10px; border: 2px dashed #ddd;">
+                    <h4 style="color: #95a5a6; margin-bottom: 1rem;">📝 Blog Yönetimi</h4>
+                    <p style="margin-bottom: 0.5rem;">blogs.json dosyasından blog yazıları yüklendi.</p>
+                    <p style="margin: 0; font-size: 0.9rem;">Yeni blog eklemek için yukarıdaki formu kullanın.</p>
+                    <div style="margin-top: 1rem; padding: 1rem; background: #e3f2fd; border-radius: 8px; border-left: 4px solid #2196f3;">
+                        <h5 style="color: #1976d2; margin-bottom: 0.5rem;">💡 Nasıl Blog Eklerim?</h5>
+                        <p style="margin: 0; font-size: 0.9rem; color: #424242; line-height: 1.5;">
+                            1. Yukarıdaki formdan blog oluşturun<br>
+                            2. JSON verisini kopyalayın<br>
+                            3. GitHub'da blogs.json dosyasını düzenleyin<br>
+                            4. Yeni blog'u posts dizisinin başına ekleyin<br>
+                            5. Değişiklikleri kaydedin
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Post silme - JSON uyarısı ile (sadece geçici silme)
+        function deletePost(button) {
+            alert('⚠️ JSON tabanlı blog sistemi!\n\nBlog yazılarını kalıcı olarak silmek için:\n1. GitHub\'da blogs.json dosyasını açın\n2. İlgili blog verisini silin\n3. Değişiklikleri kaydedin\n\nBu buton sadece sayfada geçici silme yapar.');
+            
+            // Geçici olarak sayfadan kaldır
+            let postItem = button.closest('.post-item');
+            if (!postItem) {
+                let currentElement = button;
+                while (currentElement && !currentElement.classList.contains('post-item')) {
+                    currentElement = currentElement.parentElement;
+                }
+                postItem = currentElement;
+            }
+            
+            if (postItem) {
+                const blogId = postItem.getAttribute('data-blog-id');
+                postItem.remove();
+                
+                // Blog sayfasından da kaldır
+                const blogPost = document.querySelector(`[data-id="${blogId}"]`);
+                if (blogPost) {
+                    blogPost.remove();
+                }
+                
+                console.log('Geçici olarak silindi:', blogId);
+            }
+        }
+
+        // Post düzenleme - JSON uyarısı ile
+        function editPost(button) {
+            alert('⚠️ JSON tabanlı blog sistemi!\n\nBlog yazılarını düzenlemek için:\n1. GitHub\'da blogs.json dosyasını açın\n2. İlgili blog verisini düzenleyin\n3. Değişiklikleri kaydedin\n4. Sayfa otomatik güncellenecek\n\nAdmin panelden JSON verisini kopyalayabilirsiniz.');
         }
 
         // Tam blog yazısını göster - resim modal pencerede kaldırıldı
@@ -1921,34 +1880,7 @@
             }
         }
 
-        // Düzenleme fonksiyonu - localStorage uyumlu versiyon (eski editPost yerine)
-        function editPost(button) {
-            // Admin panelindeki post'u bul
-            let postItem = button.closest('.post-item');
-            
-            if (!postItem) {
-                let currentElement = button;
-                while (currentElement && !currentElement.classList.contains('post-item')) {
-                    currentElement = currentElement.parentElement;
-                }
-                postItem = currentElement;
-            }
-            
-            if (!postItem) {
-                alert('❌ Post elementi bulunamadı!');
-                return;
-            }
-            
-            // Blog ID'sini al
-            const blogId = postItem.getAttribute('data-blog-id');
-            
-            if (blogId) {
-                // localStorage'dan düzenle
-                editStoredPost(blogId);
-            } else {
-                alert('❌ Bu blog yazısı localStorage ile uyumlu değil!');
-            }
-        }
+
 
 
 
@@ -1995,10 +1927,10 @@
             }
         }
 
-        // Sayfa yükleme işlemleri
+        // Sayfa yükleme işlemleri - JSON blog sistemi ile
         document.addEventListener('DOMContentLoaded', function() {
-            // Blog yazılarını localStorage'dan yükle
-            loadBlogsFromStorage();
+            // Blog yazılarını JSON dosyasından yükle
+            loadBlogsFromJSON();
             
             // Gizli admin ipucunu 10 saniye sonra tamamen gizle
             setTimeout(function() {
