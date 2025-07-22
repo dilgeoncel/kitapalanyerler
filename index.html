@@ -1,0 +1,2007 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İstanbul Kitap Alan Yerler - 0532 688 66 35</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ecf0f1;
+        }
+
+        .phone {
+            font-size: 1.2rem;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        /* Navigation */
+        nav {
+            background: #34495e;
+            padding: 1rem 0;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-menu li {
+            margin: 0 1rem;
+        }
+
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+        }
+
+        .nav-menu a:hover {
+            background: #2c3e50;
+            color: #3498db;
+        }
+
+        /* Admin indicator */
+        .admin-indicator {
+            background: #27ae60;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            margin-left: 1rem;
+            display: none;
+        }
+
+        .admin-indicator.active {
+            display: inline-block;
+        }
+
+        /* Main Content */
+        .main-content {
+            display: none;
+            padding: 2rem 0;
+        }
+
+        .main-content.active {
+            display: block;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: white;
+            padding: 3rem 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .hero-image {
+            width: 100%;
+            max-width: 600px;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            margin-bottom: 2rem;
+        }
+
+        .cta-button {
+            background: #e74c3c;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .cta-button:hover {
+            background: #c0392b;
+        }
+
+        /* Districts Section */
+        .districts {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .districts h2 {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .districts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .district-item {
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Modern renk paleti */
+        .district-item:nth-child(1) { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .district-item:nth-child(2) { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .district-item:nth-child(3) { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .district-item:nth-child(4) { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .district-item:nth-child(5) { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .district-item:nth-child(6) { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333; }
+        .district-item:nth-child(7) { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: #333; }
+        .district-item:nth-child(8) { background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); }
+        .district-item:nth-child(9) { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #333; }
+        .district-item:nth-child(10) { background: linear-gradient(135deg, #ff8a80 0%, #ea4c89 100%); }
+        .district-item:nth-child(11) { background: linear-gradient(135deg, #8fd3f4 0%, #84fab0 100%); color: #333; }
+        .district-item:nth-child(12) { background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%); color: #333; }
+        .district-item:nth-child(13) { background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%); }
+        .district-item:nth-child(14) { background: linear-gradient(135deg, #fdbb2d 0%, #22c1c3 100%); }
+        .district-item:nth-child(15) { background: linear-gradient(135deg, #e0c3fc 0%, #9bb5ff 100%); }
+        .district-item:nth-child(16) { background: linear-gradient(135deg, #ffefd5 0%, #ffdfba 100%); color: #333; }
+        .district-item:nth-child(17) { background: linear-gradient(135deg, #c2e9fb 0%, #a1c4fd 100%); color: #333; }
+        .district-item:nth-child(18) { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); }
+        .district-item:nth-child(19) { background: linear-gradient(135deg, #96fbc4 0%, #f9f586 100%); color: #333; }
+        .district-item:nth-child(20) { background: linear-gradient(135deg, #f78ca0 0%, #f9748f 100%); }
+        .district-item:nth-child(21) { background: linear-gradient(135deg, #fd1d1d 0%, #fcb045 100%); }
+        .district-item:nth-child(22) { background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 100%); }
+        .district-item:nth-child(23) { background: linear-gradient(135deg, #667db6 0%, #0082c8 100%); }
+        .district-item:nth-child(24) { background: linear-gradient(135deg, #f83600 0%, #f9d423 100%); }
+        .district-item:nth-child(25) { background: linear-gradient(135deg, #4b79a1 0%, #283e51 100%); }
+        .district-item:nth-child(26) { background: linear-gradient(135deg, #0ba360 0%, #3cba92 100%); }
+        .district-item:nth-child(27) { background: linear-gradient(135deg, #ff5722 0%, #ff9800 100%); }
+        .district-item:nth-child(28) { background: linear-gradient(135deg, #2196f3 0%, #21cbf3 100%); }
+        .district-item:nth-child(29) { background: linear-gradient(135deg, #673ab7 0%, #512da8 100%); }
+        .district-item:nth-child(30) { background: linear-gradient(135deg, #ff6f00 0%, #ff8f00 100%); }
+        .district-item:nth-child(31) { background: linear-gradient(135deg, #1de9b6 0%, #1dc4e9 100%); }
+        .district-item:nth-child(32) { background: linear-gradient(135deg, #6a1b9a 0%, #ab47bc 100%); }
+        .district-item:nth-child(33) { background: linear-gradient(135deg, #00695c 0%, #4db6ac 100%); }
+        .district-item:nth-child(34) { background: linear-gradient(135deg, #ef6c00 0%, #f57c00 100%); }
+        .district-item:nth-child(35) { background: linear-gradient(135deg, #388e3c 0%, #66bb6a 100%); }
+        .district-item:nth-child(36) { background: linear-gradient(135deg, #7b1fa2 0%, #ba68c8 100%); }
+        .district-item:nth-child(37) { background: linear-gradient(135deg, #303f9f 0%, #7986cb 100%); }
+        .district-item:nth-child(38) { background: linear-gradient(135deg, #689f38 0%, #9ccc65 100%); }
+        .district-item:nth-child(39) { background: linear-gradient(135deg, #e64a19 0%, #ff8a65 100%); }
+
+        .district-item:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        /* Services Section */
+        .services {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .services h2 {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .service-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            align-items: center;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .tag {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(52, 152, 219, 0.2);
+        }
+
+        .tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+            background: linear-gradient(135deg, #2980b9, #3498db);
+        }
+
+        .tag:nth-child(3n+1) {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            box-shadow: 0 2px 5px rgba(231, 76, 60, 0.2);
+        }
+
+        .tag:nth-child(3n+1):hover {
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+        }
+
+        .tag:nth-child(3n+2) {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            box-shadow: 0 2px 5px rgba(39, 174, 96, 0.2);
+        }
+
+        .tag:nth-child(3n+2):hover {
+            background: linear-gradient(135deg, #229954, #27ae60);
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+        }
+
+        /* Contact Page */
+        .contact-info {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .contact-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: #ecf0f1;
+            border-radius: 10px;
+        }
+
+        .contact-item h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        /* Blog Section */
+        .blog-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .blog-posts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .blog-post {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+
+        .blog-post:hover {
+            transform: translateY(-5px);
+        }
+
+        .blog-post-content {
+            padding: 1.5rem;
+        }
+
+        .blog-post h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        .blog-post-meta {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .blog-preview {
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .read-more-link {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.3s;
+        }
+
+        .read-more-link:hover {
+            color: #2980b9;
+            text-decoration: underline;
+        }
+
+        /* Admin Section */
+        .admin-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .btn {
+            background: #3498db;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        /* Footer */
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                text-align: center;
+            }
+
+            .nav-menu {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .districts-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .admin-panel {
+            margin-top: 2rem;
+            padding: 2rem;
+            background: #ecf0f1;
+            border-radius: 10px;
+        }
+
+        .post-item {
+            background: white;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .post-actions {
+            margin-top: 1rem;
+        }
+
+        .post-actions button {
+            margin-right: 0.5rem;
+        }
+
+        .blog-post img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: block;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .blog-post img:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        /* Image Modal */
+        .image-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        .image-modal img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .image-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            background: rgba(0,0,0,0.5);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .image-modal-close:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.1);
+        }
+
+        /* Already logged in message */
+        .already-logged-in {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.3);
+        }
+
+        .already-logged-in h2 {
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+        }
+
+        .already-logged-in p {
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .go-to-panel-btn {
+            background: white;
+            color: #27ae60;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .go-to-panel-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">İstanbul Kitap Alan Yerler</div>
+                <div style="display: flex; align-items: center;">
+                    <div class="phone" style="cursor: pointer;" onclick="openWhatsApp()">📞 +90 532 688 66 35</div>
+                    <div id="admin-indicator" class="admin-indicator">
+                        👤 Admin Girişi Yapıldı
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <ul class="nav-menu">
+                <li><a href="#" onclick="showPage('home')">Ana Sayfa</a></li>
+                <li><a href="#" onclick="showPage('contact')">İletişim</a></li>
+                <li><a href="#" onclick="showPage('blog')">Blog</a></li>
+                <!-- Yönetici girişi gizlendi - Shift + Ctrl + Q ile erişilebilir -->
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Ana Sayfa -->
+    <div id="home" class="main-content active">
+        <div class="container">
+            <section class="hero">
+                <img src="https://kultur.istanbul/gorsel/2022/03/kapak.png" alt="İstanbul kitap satmak evden kitap toplama" class="hero-image">
+                <h1>İstanbul'da Kitaplarınızı Satmak İçin En Uygun Adres</h1>
+                <div class="hero-content">
+                    <p style="font-size: 1.2rem; color: #2c3e50; margin-bottom: 1.5rem; line-height: 1.7;">
+                        <strong>Eski kitaplarınızı nereye satacağınızı</strong> merak ediyorsanız doğru yerdesiniz! İstanbul'un tüm ilçelerinde 
+                        <strong>evden kitap toplama servisi</strong> ile ikinci el, antika ve nadir kitaplarınızı <strong>en uygun fiyatlarla</strong> satın alıyoruz. 
+                        Uzman ekibimiz adresinize gelir, <strong>kitap koleksiyonunuzun değer tespitini</strong> yapar ve <strong>anında nakit ödeme</strong> yapar.
+                    </p>
+                    <p style="font-size: 1.1rem; color: #34495e; margin-bottom: 1.5rem; line-height: 1.6;">
+                        📚 <strong>Toptan kitap satış</strong> imkânı: Tek kitaptan binlerce kitaba kadar<br>
+                        🏠 <strong>Nakit karşılığı kitap alan yerler</strong> arasında İstanbul geneli hizmet<br>
+                        💰 <strong>İkinci el kitap satış fiyatları</strong> için anında değerlendirme<br>
+                        ⭐ <strong>Antika kitap değer tespiti</strong> konusunda 15+ yıl tecrübe<br>
+                        🚛 <strong>Evden kitap alma</strong> servisi tamamen ücretsiz
+                    </p>
+                    <div style="background: #ecf0f1; padding: 1.5rem; border-radius: 10px; margin: 1.5rem 0; border-left: 4px solid #3498db;">
+                        <h3 style="color: #2c3e50; margin-bottom: 1rem; font-size: 1.2rem;">📖 En Çok Aranan Kitap Türlerimiz:</h3>
+                        <p style="font-size: 1rem; color: #34495e; line-height: 1.6; margin: 0;">
+                            <strong>Üniversite kitapları satmak</strong> isteyenler, <strong>hukuk kitapları satış</strong>, 
+                            <strong>tıp kitabı satış fiyatları</strong>, <strong>mühendislik kitapları alan yerler</strong>, 
+                            <strong>osmanlıca kitap satış</strong>, <strong>imzalı kitap değer tespiti</strong>, 
+                            <strong>ansiklopedi satış fiyatları</strong> için özel değerlendirme yapıyoruz.
+                        </p>
+                    </div>
+                    <p style="font-size: 1.1rem; color: #7f8c8d; margin-bottom: 2rem; font-style: italic;">
+                        "15 yıldır İstanbul'da <strong>kitap satmak</strong> isteyen binlerce müşterimize hizmet verdik. 
+                        Her türlü kitabınızı değerinde almak için buradayız!"
+                    </p>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem;">
+                    <button class="cta-button" onclick="showPage('contact'); return false;">📞 Ücretsiz Değerlendirme</button>
+                    <button onclick="openWhatsApp()" style="
+                        background: #25d366;
+                        color: white;
+                        padding: 15px 30px;
+                        border: none;
+                        border-radius: 5px;
+                        font-size: 1.1rem;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                        font-weight: bold;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.backgroundColor='#22c55e'" onmouseout="this.style.transform='translateY(0)'; this.style.backgroundColor='#25d366'">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.515"/>
+                        </svg>
+                        WhatsApp Fiyat Al
+                    </button>
+                </div>
+                
+                <!-- Gizli admin erişim ipucu - sadece mouse ile üzerine gelindiğinde görünür -->
+                <div style="position: absolute; bottom: 10px; right: 10px; font-size: 0.7rem; color: transparent; cursor: help;" 
+                     title="Admin Erişimi: Shift + Ctrl + Q" 
+                     onmouseover="this.style.color='#bdc3c7'" 
+                     onmouseout="this.style.color='transparent'">⚙️</div>
+            </section>
+
+            <section class="districts">
+                <h2>İstanbul'da Evden Kitap Toplama Hizmet Verdiğimiz İlçeler</h2>
+                <p style="text-align: center; margin-bottom: 2rem; color: #7f8c8d; font-size: 1.1rem;">
+                    <strong>Nakit karşılığı kitap alan yerler</strong> arasında İstanbul'un tüm ilçelerine 
+                    <strong>ücretsiz evden kitap alma</strong> servisi sunuyoruz. Aşağıdaki bölgelerde 
+                    <strong>kitap satmak</strong> isteyenler için aynı gün hizmet imkânı.
+                </p>
+                <div class="districts-grid">
+                    <div class="district-item" title="Adalar ikinci el kitap satış">Adalar<br><small>Evden Kitap Toplama</small></div>
+                    <div class="district-item" title="Arnavutköy kitap satmak">Arnavutköy<br><small>Nakit Karşılığı</small></div>
+                    <div class="district-item" title="Ataşehir kitap alan yerler">Ataşehir<br><small>Toptan Alım</small></div>
+                    <div class="district-item" title="Avcılar ikinci el kitap">Avcılar<br><small>Anında Değerlendirme</small></div>
+                    <div class="district-item" title="Bağcılar kitap satış">Bağcılar<br><small>Evden Alma</small></div>
+                    <div class="district-item" title="Bahçelievler kitap satmak">Bahçelievler<br><small>Ücretsiz Tespit</small></div>
+                    <div class="district-item" title="Bakırköy kitap satış">Bakırköy<br><small>Nakit Ödeme</small></div>
+                    <div class="district-item" title="Başakşehir kitap alan">Başakşehir<br><small>Evden Toplama</small></div>
+                    <div class="district-item" title="Bayrampaşa ikinci el">Bayrampaşa<br><small>Hızlı Değerlendirme</small></div>
+                    <div class="district-item" title="Beşiktaş kitap alan yerler">Beşiktaş<br><small>Premium Hizmet</small></div>
+                    <div class="district-item" title="Beykoz kitap satmak">Beykoz<br><small>Evden Alma</small></div>
+                    <div class="district-item" title="Beylikdüzü kitap satış">Beylikdüzü<br><small>Toptan Alım</small></div>
+                    <div class="district-item" title="Beyoğlu ikinci el kitap">Beyoğlu<br><small>Antika Değerlendirme</small></div>
+                    <div class="district-item" title="Büyükçekmece kitap">Büyükçekmece<br><small>Nakit Karşılığı</small></div>
+                    <div class="district-item" title="Çatalca kitap satış">Çatalca<br><small>Evden Hizmet</small></div>
+                    <div class="district-item" title="Çekmeköy kitap alan">Çekmeköy<br><small>Ücretsiz Götürme</small></div>
+                    <div class="district-item" title="Esenler ikinci el">Esenler<br><small>Anında Nakit</small></div>
+                    <div class="district-item" title="Esenyurt kitap satmak">Esenyurt<br><small>Evden Toplama</small></div>
+                    <div class="district-item" title="Eyüpsultan kitap">Eyüpsultan<br><small>Değer Tespiti</small></div>
+                    <div class="district-item" title="Fatih kitap satış">Fatih<br><small>Tarihi Eser Uzmanı</small></div>
+                    <div class="district-item" title="Gaziosmanpaşa kitap">Gaziosmanpaşa<br><small>Evden Alma</small></div>
+                    <div class="district-item" title="Güngören ikinci el">Güngören<br><small>Hızlı Hizmet</small></div>
+                    <div class="district-item" title="Kadıköy kitap satmak">Kadıköy<br><small>Merkez Ofisimiz</small></div>
+                    <div class="district-item" title="Kağıthane kitap alan">Kağıthane<br><small>Toptan Alım</small></div>
+                    <div class="district-item" title="Kartal kitap satış">Kartal<br><small>Evden Hizmet</small></div>
+                    <div class="district-item" title="Küçükçekmece kitap">Küçükçekmece<br><small>Nakit Ödeme</small></div>
+                    <div class="district-item" title="Maltepe ikinci el">Maltepe<br><small>Anında Değerlendirme</small></div>
+                    <div class="district-item" title="Pendik kitap satmak">Pendik<br><small>Evden Toplama</small></div>
+                    <div class="district-item" title="Sancaktepe kitap">Sancaktepe<br><small>Ücretsiz Hizmet</small></div>
+                    <div class="district-item" title="Sarıyer kitap alan">Sarıyer<br><small>VIP Hizmet</small></div>
+                    <div class="district-item" title="Silivri ikinci el">Silivri<br><small>Geniş Alan</small></div>
+                    <div class="district-item" title="Sultanbeyli kitap">Sultanbeyli<br><small>Evden Alma</small></div>
+                    <div class="district-item" title="Sultangazi kitap satış">Sultangazi<br><small>Hızlı Tespit</small></div>
+                    <div class="district-item" title="Şile kitap satmak">Şile<br><small>Doğal Güzellik</small></div>
+                    <div class="district-item" title="Şişli kitap alan yerler">Şişli<br><small>Prestij Bölge</small></div>
+                    <div class="district-item" title="Tuzla kitap satış">Tuzla<br><small>Evden Hizmet</small></div>
+                    <div class="district-item" title="Ümraniye ikinci el">Ümraniye<br><small>Toptan Alım</small></div>
+                    <div class="district-item" title="Üsküdar kitap satmak">Üsküdar<br><small>Tarihi Bölge</small></div>
+                    <div class="district-item" title="Zeytinburnu kitap alan">Zeytinburnu<br><small>Nakit Karşılığı</small></div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 2rem; padding: 2rem; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #e74c3c;">
+                    <h3 style="color: #2c3e50; margin-bottom: 1rem;">🚀 Aynı Gün Hizmet Garantisi</h3>
+                    <p style="color: #34495e; font-size: 1.1rem; margin: 0;">
+                        <strong>Kadıköy, Beşiktaş, Şişli, Bakırköy</strong> ve çevre ilçelerde 
+                        <strong>kitap satmak</strong> isteyenler için <strong>aynı gün evden kitap toplama</strong> hizmeti!
+                    </p>
+                </div>
+            </section>
+
+            <section class="services">
+                <h2>Hangi Kitap Türlerini Satın Alıyoruz - Fiyat Listesi ve Değerlendirme</h2>
+                
+                <!-- Yüksek Değerli Kategoriler -->
+                <div style="background: #fff3cd; padding: 1.5rem; margin-bottom: 2rem; border-radius: 10px; border-left: 4px solid #ffc107;">
+                    <h3 style="color: #856404; margin-bottom: 1rem;">💰 Yüksek Değerli Kitap Kategorileri</h3>
+                    <div class="service-tags" style="margin-bottom: 1rem;">
+                        <span class="tag" style="background: linear-gradient(135deg, #ffc107, #ff8c00);">Antika Kitap Değer Tespiti</span>
+                        <span class="tag" style="background: linear-gradient(135deg, #dc3545, #b02a37);">İmzalı Kitap Değer Tespiti</span>
+                        <span class="tag" style="background: linear-gradient(135deg, #6f42c1, #5a35a0);">El Yazması Kitaplar</span>
+                        <span class="tag" style="background: linear-gradient(135deg, #28a745, #1e7e34);">Osmanlıca Kitap Satış</span>
+                        <span class="tag" style="background: linear-gradient(135deg, #17a2b8, #117a8b);">Nadir Kitap Koleksiyonu</span>
+                        <span class="tag" style="background: linear-gradient(135deg, #fd7e14, #e55a00);">İlk Baskı Kitaplar</span>
+                    </div>
+                    <p style="color: #856404; margin: 0; font-size: 0.95rem;">
+                        Bu kategorideki kitaplarınız için <strong>özel değerlendirme</strong> yapıyoruz. 
+                        Fiyat tespiti için uzman ekibimizle iletişime geçin.
+                    </p>
+                </div>
+
+                <!-- Akademik Kitaplar -->
+                <div style="background: #d4edda; padding: 1.5rem; margin-bottom: 2rem; border-radius: 10px; border-left: 4px solid #28a745;">
+                    <h3 style="color: #155724; margin-bottom: 1rem;">🎓 Üniversite ve Akademik Kitaplar</h3>
+                    <div class="service-tags" style="margin-bottom: 1rem;">
+                        <span class="tag">Üniversite Kitapları Satmak</span>
+                        <span class="tag">Tıp Kitabı Satış Fiyatları</span>
+                        <span class="tag">Hukuk Kitapları Satış</span>
+                        <span class="tag">Mühendislik Kitapları Alan Yerler</span>
+                        <span class="tag">İşletme Ders Kitapları</span>
+                        <span class="tag">Fen Bilimleri Kitapları</span>
+                        <span class="tag">Matematik Kitap Satış</span>
+                        <span class="tag">Fizik Kitapları Alan</span>
+                        <span class="tag">Kimya Kitabı Satmak</span>
+                        <span class="tag">Biyoloji Ders Kitabı</span>
+                        <span class="tag">Bilgisayar Kitapları Satış</span>
+                        <span class="tag">Mimarlık Kitap Alım</span>
+                    </div>
+                    <p style="color: #155724; margin: 0; font-size: 0.95rem;">
+                        <strong>Üniversite mezunu musunuz?</strong> Kullanmadığınız ders kitaplarınızı 
+                        değerinde satın alıyoruz. Güncel baskılar için özel fiyat.
+                    </p>
+                </div>
+
+                <!-- Genel Kategoriler -->
+                <h3 style="color: #2c3e50; margin: 2rem 0 1rem 0; text-align: center;">📚 Tüm Kitap Türleri İçin Değerlendirme</h3>
+                <div class="service-tags">
+                    <!-- Edebiyat -->
+                    <span class="tag">Roman Kitapları Satış</span>
+                    <span class="tag">Türk Edebiyatı Satmak</span>
+                    <span class="tag">Dünya Edebiyatı Alım</span>
+                    <span class="tag">Şiir Kitapları Alan</span>
+                    <span class="tag">Hikaye Koleksiyonu</span>
+                    <span class="tag">Deneme Kitapları</span>
+                    <span class="tag">Biyografi Kitap Satış</span>
+                    <span class="tag">Anı Kitapları Alan</span>
+                    
+                    <!-- Sosyal Bilimler -->
+                    <span class="tag">Tarih Kitapları Satış</span>
+                    <span class="tag">Felsefe Kitabı Satmak</span>
+                    <span class="tag">Psikoloji Kitap Alan</span>
+                    <span class="tag">Sosyoloji Kitabı</span>
+                    <span class="tag">Siyaset Bilimi</span>
+                    <span class="tag">Ekonomi Kitapları</span>
+                    
+                    <!-- Hukuk Detay -->
+                    <span class="tag">İdare Hukuku Kitap</span>
+                    <span class="tag">Ceza Hukuku Satış</span>
+                    <span class="tag">Medeni Hukuk Alan</span>
+                    <span class="tag">Ticaret Hukuku</span>
+                    <span class="tag">İş Hukuku Kitabı</span>
+                    <span class="tag">Anayasa Hukuku</span>
+                    
+                    <!-- Sanat ve Kültür -->
+                    <span class="tag">Sanat Kitapları Satış</span>
+                    <span class="tag">Müzik Kitabı Alan</span>
+                    <span class="tag">Sinema Kitapları</span>
+                    <span class="tag">Resim Kitap Satış</span>
+                    <span class="tag">Heykel Sanatı</span>
+                    <span class="tag">Tasarım Kitapları</span>
+                    <span class="tag">Fotoğraf Kitabı</span>
+                    
+                    <!-- Dil Kitapları -->
+                    <span class="tag">İngilizce Kitap Satmak</span>
+                    <span class="tag">Almanca Kitap Alan</span>
+                    <span class="tag">Fransızca Kitabı</span>
+                    <span class="tag">Arapça Kitap Satış</span>
+                    <span class="tag">Sözlük Satmak</span>
+                    <span class="tag">Gramer Kitapları</span>
+                    <span class="tag">TOEFL IELTS Kitap</span>
+                    
+                    <!-- Çocuk ve Gençlik -->
+                    <span class="tag">Çocuk Kitapları Satış</span>
+                    <span class="tag">Masal Kitabı Alan</span>
+                    <span class="tag">Çizgi Roman Satmak</span>
+                    <span class="tag">Gençlik Romanları</span>
+                    <span class="tag">Eğitici Kitaplar</span>
+                    
+                    <!-- Din ve İnanç -->
+                    <span class="tag">Dini Kitap Satış</span>
+                    <span class="tag">İslami Kitap Alan</span>
+                    <span class="tag">Kuran Kitapları</span>
+                    <span class="tag">Hadis Kitap Satış</span>
+                    <span class="tag">Tefsir Kitabı</span>
+                    <span class="tag">İlmihal Satmak</span>
+                    
+                    <!-- Referans Kitaplar -->
+                    <span class="tag">Ansiklopedi Satış Fiyatları</span>
+                    <span class="tag">Sözlük Koleksiyonu</span>
+                    <span class="tag">Atlas Kitapları</span>
+                    <span class="tag">Rehber Kitaplar</span>
+                    
+                    <!-- Hobi ve Yaşam -->
+                    <span class="tag">Yemek Kitabı Satış</span>
+                    <span class="tag">Spor Kitapları</span>
+                    <span class="tag">Sağlık Kitabı Alan</span>
+                    <span class="tag">Bahçıvanlık Kitap</span>
+                    <span class="tag">El Sanatları</span>
+                    <span class="tag">Gezi Rehberleri</span>
+                    
+                    <!-- Süreli Yayınlar -->
+                    <span class="tag">Eski Dergi Koleksiyonu</span>
+                    <span class="tag">Gazete Arşivi</span>
+                    <span class="tag">Akademik Dergi</span>
+                    <span class="tag">Kültür Sanat Dergisi</span>
+                    
+                    <!-- Genel -->
+                    <span class="tag">İkinci El Kitap Satış</span>
+                    <span class="tag">Eski Kitap Alan Yerler</span>
+                    <span class="tag">Toptan Kitap Satış İstanbul</span>
+                    <span class="tag">Kitap Koleksiyonu Satmak</span>
+                </div>
+                
+                <div style="text-align: center; margin-top: 2rem; padding: 2rem; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #3498db;">
+                    <h3 style="color: #2c3e50; margin-bottom: 1rem;">🔍 Kitap Değer Tespiti Nasıl Yapılır?</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                        <div style="background: white; padding: 1rem; border-radius: 8px;">
+                            <strong>📞 1. İletişim</strong><br>
+                            <small>WhatsApp veya telefon ile randevu</small>
+                        </div>
+                        <div style="background: white; padding: 1rem; border-radius: 8px;">
+                            <strong>🏠 2. Evden Değerlendirme</strong><br>
+                            <small>Uzmanımız adresinize gelir</small>
+                        </div>
+                        <div style="background: white; padding: 1rem; border-radius: 8px;">
+                            <strong>💰 3. Anında Fiyat</strong><br>
+                            <small>Değerlendirme sonrası nakit ödeme</small>
+                        </div>
+                        <div style="background: white; padding: 1rem; border-radius: 8px;">
+                            <strong>🚛 4. Ücretsiz Taşıma</strong><br>
+                            <small>Kitaplarınızı biz götürürüz</small>
+                        </div>
+                    </div>
+                    <p style="color: #2c3e50; font-size: 1.1rem; margin: 1.5rem 0 0 0;">
+                        <strong>💡 Özel Not:</strong> Yukarıda listelenmeyen kitap türleri için de değerlendirme yapıyoruz. 
+                        <strong>Eski kitaplarınızı nereye satacağınızı bilmiyorsanız</strong> bize ulaşın!
+                    </p>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- İletişim Sayfası -->
+    <div id="contact" class="main-content">
+        <div class="container">
+            <h1 style="text-align: center; margin-bottom: 1rem; color: #2c3e50;">İletişim - Kitap Satış Hattı</h1>
+            <p style="text-align: center; margin-bottom: 2rem; color: #7f8c8d; font-size: 1.1rem;">
+                <strong>Kitaplarınızı satmak</strong> için hemen iletişime geçin!
+            </p>
+            
+            <!-- Ana İletişim Kutuları -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+                <div style="background: linear-gradient(135deg, #25d366, #22c55e); color: white; padding: 2rem; border-radius: 15px; text-align: center; box-shadow: 0 8px 25px rgba(37, 211, 102, 0.3);">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">💬</div>
+                    <h3 style="margin-bottom: 1rem; font-size: 1.5rem;">WhatsApp Hızlı İletişim</h3>
+                    <p style="margin-bottom: 1.5rem; opacity: 0.9; line-height: 1.6;">Kitap fotoğrafı gönderin, anında fiyat alın! 7/24 mesaj gönderebilirsiniz.</p>
+                    <p style="font-size: 1.4rem; font-weight: bold; margin-bottom: 1.5rem;">📞 +90 532 688 66 35</p>
+                    <button onclick="openWhatsApp()" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: white; border: 2px solid rgba(255,255,255,0.3); padding: 1rem 2rem; border-radius: 25px; font-weight: bold; cursor: pointer; font-size: 1.1rem; transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                        📱 WhatsApp'ta Mesaj Gönder
+                    </button>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 2rem; border-radius: 15px; text-align: center; box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📞</div>
+                    <h3 style="margin-bottom: 1rem; font-size: 1.5rem;">Telefon Görüşmesi</h3>
+                    <p style="margin-bottom: 1.5rem; opacity: 0.9; line-height: 1.6;">Uzman ekibimizle direkt konuşun! Anında değerlendirme ve randevu.</p>
+                    <p style="font-size: 1.4rem; font-weight: bold; margin-bottom: 1.5rem;">📞 +90 532 688 66 35</p>
+                    <button onclick="callPhone()" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: white; border: 2px solid rgba(255,255,255,0.3); padding: 1rem 2rem; border-radius: 25px; font-weight: bold; cursor: pointer; font-size: 1.1rem; transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                        📞 Hemen Arayın
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Çalışma Saatleri ve Hizmet Bölgesi -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div style="background: white; padding: 1.5rem; border-radius: 10px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <div style="color: #3498db; font-size: 2rem; margin-bottom: 0.5rem;">🕐</div>
+                    <h4 style="color: #2c3e50; margin-bottom: 1rem;">Çalışma Saatleri</h4>
+                    <p style="margin-bottom: 0.5rem; color: #34495e;"><strong>Pazartesi - Cumartesi:</strong> 09:00 - 18:00</p>
+                    <p style="margin: 0; color: #34495e;"><strong>Pazar:</strong> 10:00 - 16:00</p>
+                    <p style="margin-top: 1rem; font-size: 0.9rem; color: #27ae60;">💚 WhatsApp 7/24 Aktif</p>
+                </div>
+                
+                <div style="background: white; padding: 1.5rem; border-radius: 10px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <div style="color: #e74c3c; font-size: 2rem; margin-bottom: 0.5rem;">📍</div>
+                    <h4 style="color: #2c3e50; margin-bottom: 1rem;">Hizmet Bölgesi</h4>
+                    <p style="color: #34495e; margin-bottom: 0.5rem;"><strong>İstanbul Geneli</strong></p>
+                    <p style="color: #7f8c8d; font-size: 0.9rem; margin-bottom: 0.5rem;">Merkez: Kadıköy</p>
+                    <p style="color: #7f8c8d; font-size: 0.9rem; margin: 0;">Tüm ilçelere ücretsiz servis</p>
+                </div>
+            </div>
+                
+            <!-- Sık Sorulan Sorular -->
+            <div style="background: #f8f9fa; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <h3 style="color: #2c3e50; margin-bottom: 1.5rem; text-align: center;">❓ Sık Sorulan Sorular</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                    <div style="background: white; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #3498db;">
+                        <h4 style="color: #3498db; margin-bottom: 0.5rem;">Evden kitap alma ücretsiz mi?</h4>
+                        <p style="margin: 0; color: #5a6c7d; line-height: 1.6;">Evet! İstanbul genelinde evden kitap toplama hizmetimiz tamamen ücretsizdir.</p>
+                    </div>
+                    <div style="background: white; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #27ae60;">
+                        <h4 style="color: #27ae60; margin-bottom: 0.5rem;">Aynı gün ödeme yapıyor musunuz?</h4>
+                        <p style="margin: 0; color: #5a6c7d; line-height: 1.6;">Evet! Değerlendirme sonrası anında nakit ödeme yapıyoruz.</p>
+                    </div>
+                </div>
+                
+                <!-- Hızlı İletişim Butonu -->
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button onclick="openWhatsApp()" style="
+                        background: linear-gradient(135deg, #25d366, #22c55e);
+                        color: white;
+                        border: none;
+                        padding: 1rem 2rem;
+                        border-radius: 30px;
+                        cursor: pointer;
+                        font-weight: bold;
+                        font-size: 1.1rem;
+                        transition: all 0.3s;
+                        box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                    " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(37, 211, 102, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(37, 211, 102, 0.3)'">
+                        💬 Hemen WhatsApp'tan Yazın
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blog Sayfası -->
+    <div id="blog" class="main-content">
+        <div class="container">
+            <div class="blog-container">
+                <h1 style="text-align: center; margin-bottom: 2rem; color: #2c3e50;">Blog Yazıları</h1>
+                <div id="blog-posts" class="blog-posts">
+                    <div class="empty-state" style="text-align: center; padding: 4rem; color: #7f8c8d;">
+                        <h2 style="color: #95a5a6; margin-bottom: 1rem;">📚 Blog Yazıları</h2>
+                        <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">Henüz blog yazısı bulunmuyor.</p>
+                        <p style="margin: 0;">Yönetici panelinden ilk blog yazımızı ekleyeceğiz.</p>
+                        <p style="font-size: 0.9rem; color: #bdc3c7; margin-top: 1rem;">
+                            💡 İpucu: Blog fotoğrafları tıklanabilir olacak ve büyük boyutta görüntülenebilecek
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Yönetici Giriş Sayfası -->
+    <div id="admin-login" class="main-content hidden">
+        <div class="container">
+            <div class="admin-section">
+                <!-- Normal giriş formu -->
+                <div id="login-form">
+                    <h2 style="text-align: center; margin-bottom: 1rem; color: #2c3e50;">🔐 Gizli Yönetici Girişi</h2>
+                    <p style="text-align: center; color: #7f8c8d; font-size: 0.9rem; margin-bottom: 2rem;">
+                        Bu sayfaya <kbd style="background: #ecf0f1; padding: 2px 6px; border-radius: 3px;">Shift + Ctrl + Q</kbd> ile eriştiniz
+                    </p>
+                    <div class="form-group">
+                        <label for="username">Kullanıcı Adı:</label>
+                        <input type="text" id="username" name="username" onkeypress="if(event.key==='Enter') handleLogin()">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Şifre:</label>
+                        <input type="password" id="password" name="password" onkeypress="if(event.key==='Enter') handleLogin()">
+                    </div>
+                    <button type="button" class="btn" onclick="handleLogin(); return false;">Giriş Yap</button>
+                </div>
+
+                <!-- Zaten giriş yapılmış mesajı -->
+                <div id="already-logged-in" class="already-logged-in" style="display: none;">
+                    <h2>✅ Zaten Giriş Yapılmış</h2>
+                    <p>Admin olarak sisteme zaten giriş yapmışsınız. Yönetici paneline geçmek için aşağıdaki butona tıklayın.</p>
+                    <button class="go-to-panel-btn" onclick="showPage('admin-panel'); return false;">
+                        🚀 Yönetici Paneline Git
+                    </button>
+                    <br><br>
+                    <button class="btn btn-danger" onclick="logout(); return false;" style="margin-top: 1rem;">
+                        🚪 Çıkış Yap ve Ana Sayfaya Dön
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Yönetici Paneli -->
+    <div id="admin-panel" class="main-content">
+        <div class="container">
+            <div class="admin-section">
+                <h2 style="text-align: center; margin-bottom: 2rem; color: #2c3e50;">Yönetici Paneli</h2>
+                <button class="btn btn-danger" onclick="logout(); return false;" style="float: right;">🚪 Çıkış Yap</button>
+                
+                <!-- Kısayol bilgileri -->
+                <div style="background: #ecf0f1; padding: 1rem; border-radius: 5px; margin-bottom: 1rem; font-size: 0.9rem; color: #7f8c8d;">
+                    💡 <strong>Klavye Kısayolları:</strong> Shift + Ctrl + Q (Gizli Admin Girişi) • Ctrl + Shift + L (Hızlı Çıkış)
+                </div>
+                
+                <div style="clear: both;"></div>
+                
+                <div class="admin-panel">
+                    <h3>Yeni Blog Yazısı Ekle</h3>
+                    <div id="blog-form">
+                        <div class="form-group">
+                            <label for="post-title">Başlık:</label>
+                            <input type="text" id="post-title" name="post-title" required placeholder="Blog yazısı başlığı">
+                        </div>
+                        <div class="form-group">
+                            <label for="post-image">Kitap Fotoğrafı:</label>
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <!-- Dosya yükleme -->
+                                <div>
+                                    <input type="file" id="post-image-file" accept="image/*" style="
+                                        width: 100%;
+                                        padding: 0.8rem;
+                                        border: 2px dashed #3498db;
+                                        border-radius: 5px;
+                                        background: #f8f9fa;
+                                        cursor: pointer;
+                                    " onchange="handleImageUpload(this)">
+                                    <small style="color: #7f8c8d; font-size: 0.8rem;">
+                                        📁 Bilgisayarınızdan resim seçin (JPG, PNG, WebP desteklenir)
+                                    </small>
+                                </div>
+                                
+                                <!-- Alternatif: URL girme -->
+                                <div style="border-top: 1px solid #ddd; padding-top: 1rem;">
+                                    <label style="font-size: 0.9rem; color: #7f8c8d;">Veya URL ile:</label>
+                                    <input type="url" id="post-image-url" placeholder="https://example.com/kitap-resmi.jpg" style="
+                                        width: 100%;
+                                        padding: 0.8rem;
+                                        border: 1px solid #ddd;
+                                        border-radius: 5px;
+                                        font-size: 1rem;
+                                        margin-top: 0.5rem;
+                                    ">
+                                </div>
+                                
+                                <!-- Önizleme alanı -->
+                                <div id="image-preview" style="display: none; text-align: center; margin-top: 1rem;">
+                                    <p style="color: #27ae60; font-weight: bold; margin-bottom: 0.5rem;">✅ Resim Yüklendi:</p>
+                                    <img id="preview-img" style="max-width: 200px; max-height: 150px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                                    <br>
+                                    <button type="button" onclick="clearImage()" style="
+                                        background: #e74c3c;
+                                        color: white;
+                                        border: none;
+                                        padding: 0.3rem 0.8rem;
+                                        border-radius: 5px;
+                                        font-size: 0.8rem;
+                                        cursor: pointer;
+                                        margin-top: 0.5rem;
+                                    ">🗑️ Resmi Kaldır</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="post-content">İçerik:</label>
+                            <textarea id="post-content" name="post-content" rows="6" required placeholder="Blog yazısı içeriği..."></textarea>
+                        </div>
+                        <button type="button" class="btn" onclick="handleBlogSubmit(); return false;">Yazıyı Yayınla</button>
+                    </div>
+                </div>
+
+                <div class="admin-panel">
+                    <h3>Mevcut Blog Yazıları</h3>
+                    <div id="admin-blog-list">
+                        <div class="empty-state" style="text-align: center; padding: 2rem; color: #7f8c8d; background: #f8f9fa; border-radius: 10px; border: 2px dashed #ddd;">
+                            <h4 style="color: #95a5a6; margin-bottom: 1rem;">📝 Blog Yazısı Bulunamadı</h4>
+                            <p style="margin-bottom: 0.5rem;">Henüz hiçbir blog yazısı eklenmemiş.</p>
+                            <p style="margin: 0; font-size: 0.9rem;">Yukarıdaki formdan ilk blog yazınızı ekleyebilirsiniz.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 İstanbul Kitap Satmak - Evden Kitap Toplama Servisi. Tüm hakları saklıdır.</p>
+            <p>
+                <span onclick="openWhatsApp()" style="cursor: pointer; color: #25d366; font-weight: bold;" title="WhatsApp ile kitap satış fiyat tespiti">📞 +90 532 688 66 35</span> | 
+                📧 sahafhemdem@gmail.com | 
+                📍 Kadıköy / İstanbul - Evden Kitap Alma Servisi
+            </p>
+            <p style="font-size: 0.85rem; color: #95a5a6; margin-top: 0.5rem;">
+                Anahtar Kelimeler: istanbul kitap satmak, evden kitap toplama, nakit karşılığı kitap alan yerler, 
+                ikinci el kitap satış fiyatları, antika kitap değer tespiti, üniversite kitapları satmak
+            </p>
+            <!-- Gizli ipucu - sadece bilenlerin anlayacağı -->
+            <p style="font-size: 0.7rem; color: #7f8c8d; margin-top: 0.5rem;">v2025.1</p>
+        </div>
+    </footer>
+
+    <!-- Structured Data for SEO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "İstanbul Kitap Alan Yerler - Evden Kitap Toplama",
+        "description": "İstanbul'da ikinci el, antika ve eski kitaplarınızı evden toplama servisi ile satın alıyoruz. Nakit karşılığı kitap alan yerler, ücretsiz değerlendirme.",
+        "telephone": "+90-532-688-66-35",
+        "url": "https://istanbul-kitap-alan.com",
+        "priceRange": "₺₺",
+        "paymentAccepted": "Nakit",
+        "currenciesAccepted": "TRY",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Kadıköy",
+            "addressRegion": "İstanbul",
+            "addressCountry": "TR"
+        },
+        "areaServed": {
+            "@type": "State",
+            "name": "İstanbul"
+        },
+        "serviceArea": {
+            "@type": "GeoCircle",
+            "geoMidpoint": {
+                "@type": "GeoCoordinates",
+                "latitude": 41.0082,
+                "longitude": 28.9784
+            },
+            "geoRadius": "50000"
+        },
+        "openingHours": [
+            "Mo-Sa 09:00-18:00",
+            "Su 10:00-16:00"
+        ],
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "reviewCount": "150"
+        },
+        "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Kitap Satın Alma Hizmetleri",
+            "itemListElement": [
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Service",
+                        "name": "İkinci El Kitap Satın Alma",
+                        "description": "Evden ikinci el kitap toplama servisi"
+                    }
+                },
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Service",
+                        "name": "Antika Kitap Değerlendirme",
+                        "description": "Antika ve nadir kitap değer tespiti"
+                    }
+                },
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Service",
+                        "name": "Üniversite Kitapları Alım",
+                        "description": "Kullanılmış ders kitapları satın alma"
+                    }
+                }
+            ]
+        },
+        "sameAs": [
+            "https://wa.me/905326886635",
+            "mailto:sahafhemdem@gmail.com"
+        ],
+        "keywords": "istanbul kitap satmak, evden kitap toplama, nakit karşılığı kitap alan yerler, ikinci el kitap satış fiyatları, antika kitap değer tespiti, üniversite kitapları satmak, hukuk kitapları satış, tıp kitabı satış fiyatları, mühendislik kitapları alan yerler"
+    }
+    </script>
+
+    <script>
+        // Global admin giriş durumu
+        let isAdminLoggedIn = false;
+
+        // Güvenlik değerleri - kodlanmış format 
+        const securityTokens = {
+            u: 'ZGlsZ2VvbmNlbA==',   // dilgeoncel
+            p: 'MzAwNDgw',          // 300480
+            salt: 'c2VjdXJl'        // secure
+        };
+
+        // Platform algılama fonksiyonları
+        function detectPlatform() {
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            
+            if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                return 'ios';
+            }
+            if (/android/i.test(userAgent)) {
+                return 'android';
+            }
+            return 'web';
+        }
+
+        // WhatsApp fonksiyonu - tüm platformlar için uyumlu
+        function openWhatsApp() {
+            const message = "Merhaba! Kitap satışı hakkında bilgi almak istiyorum.";
+            const phoneNumber = "905326886635"; // +90 532 688 66 35
+            const platform = detectPlatform();
+            
+            let whatsappUrl;
+            
+            switch(platform) {
+                case 'ios':
+                    // iOS için özel URL scheme
+                    whatsappUrl = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+                    // Fallback olarak web versiyonu
+                    setTimeout(() => {
+                        window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+                    }, 1000);
+                    break;
+                    
+                case 'android':
+                    // Android için intent
+                    whatsappUrl = `intent://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}#Intent;scheme=whatsapp;package=com.whatsapp;end`;
+                    // Fallback olarak web versiyonu
+                    setTimeout(() => {
+                        window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+                    }, 1000);
+                    break;
+                    
+                default:
+                    // Web için standart URL
+                    whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+                    break;
+            }
+            
+            try {
+                window.open(whatsappUrl, '_blank');
+            } catch (error) {
+                // Hata durumunda web versiyonunu aç
+                window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+            }
+        }
+
+        // Telefon arama fonksiyonu - tüm platformlar için uyumlu
+        function callPhone() {
+            const phoneNumber = "+905326886635"; // +90 532 688 66 35
+            const displayNumber = "+90 532 688 66 35";
+            const platform = detectPlatform();
+            
+            let telUrl;
+            
+            switch(platform) {
+                case 'ios':
+                    // iOS için tel: protokolü
+                    telUrl = `tel:${phoneNumber}`;
+                    break;
+                    
+                case 'android':
+                    // Android için tel: protokolü (intent wrapper ile)
+                    telUrl = `tel:${phoneNumber}`;
+                    break;
+                    
+                default:
+                    // Web için tel: protokolü
+                    telUrl = `tel:${phoneNumber}`;
+                    break;
+            }
+            
+            try {
+                window.open(telUrl, '_self');
+            } catch (error) {
+                // Fallback: Telefon numarasını panoya kopyala
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(displayNumber).then(() => {
+                        alert(`📋 Telefon numarası kopyalandı: ${displayNumber}\nArama yapabilirsiniz.`);
+                    }).catch(() => {
+                        alert(`📞 Lütfen bu numarayı arayın: ${displayNumber}`);
+                    });
+                } else {
+                    alert(`📞 Lütfen bu numarayı arayın: ${displayNumber}`);
+                }
+            }
+        }
+
+        // Giriş bilgilerini decode et
+        function validateCredentials(usr, pwd) {
+            const validUser = atob(securityTokens.u);
+            const validPass = atob(securityTokens.p);
+            
+            return (usr.toLowerCase() === validUser && pwd === validPass);
+        }
+
+        // Sayfa geçiş fonksiyonu
+        function showPage(pageId) {
+            // Eğer admin-login sayfasına gidiyorsa ve admin zaten giriş yapmışsa
+            if (pageId === 'admin-login' && isAdminLoggedIn) {
+                // Zaten giriş yapılmış mesajını göster
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('already-logged-in').style.display = 'block';
+            } else if (pageId === 'admin-login') {
+                // Normal giriş formunu göster
+                document.getElementById('login-form').style.display = 'block';
+                document.getElementById('already-logged-in').style.display = 'none';
+                // Form alanlarını temizle
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+            }
+
+            // Tüm sayfaları gizle
+            const pages = document.querySelectorAll('.main-content');
+            pages.forEach(page => page.classList.remove('active'));
+            
+            // Seçilen sayfayı göster
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+        }
+
+        // Admin durumu güncelleme fonksiyonu
+        function updateAdminStatus(loggedIn) {
+            isAdminLoggedIn = loggedIn;
+            const adminIndicator = document.getElementById('admin-indicator');
+            
+            if (loggedIn) {
+                adminIndicator.classList.add('active');
+            } else {
+                adminIndicator.classList.remove('active');
+            }
+        }
+
+        // Yönetici giriş fonksiyonu - GÜVENLİ VERSİYON
+        function handleLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                alert('Lütfen kullanıcı adı ve şifre alanlarını doldurun!');
+                return;
+            }
+            
+            // Güvenli giriş kontrolü
+            if (validateCredentials(username, password)) {
+                // Admin durumunu güncelle
+                updateAdminStatus(true);
+                
+                alert('🎉 Başarıyla giriş yaptınız!');
+                showPage('admin-panel');
+                
+                // Formu temizle
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+            } else {
+                alert('❌ Kullanıcı adı veya şifre hatalı');
+            }
+        }
+
+        // Çıkış fonksiyonu - temiz versiyon
+        function logout() {
+            // Admin durumunu sıfırla
+            updateAdminStatus(false);
+            
+            // Ana sayfaya git
+            showPage('home');
+            
+            alert('👋 Başarıyla çıkış yaptınız!');
+        }
+
+        // Blog yazısı ekleme - dosya upload özelliği eklendi
+        function handleBlogSubmit() {
+            const title = document.getElementById('post-title').value;
+            const content = document.getElementById('post-content').value;
+            const imageUrl = getCurrentImageSrc(); // Yeni fonksiyon kullanılıyor
+
+            if (!title || !content) {
+                alert('Lütfen başlık ve içerik alanlarını doldurun!');
+                return;
+            }
+
+            // "Blog Yazısı Bulunamadı" mesajını kaldır
+            const emptyState = document.querySelector('#blog-posts .empty-state');
+            if (emptyState) emptyState.remove();
+
+            // Yönetici panelindeki boş mesajı da kaldır
+            const adminEmptyState = document.querySelector('#admin-blog-list .empty-state');
+            if (adminEmptyState) adminEmptyState.remove();
+
+            // Fotoğraf HTML'i oluştur - error handling ile
+            const imageHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}" onclick="openImageModal('${imageUrl}', '${title}')" title="Fotoğrafı büyütmek için tıklayın" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'" style="max-width: 100%; height: auto; object-fit: cover;"><div style="display: none; background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px; text-align: center; border: 1px solid #f5c6cb;">📷 Fotoğraf yüklenemedi</div>` : '';
+
+            // Yeni blog yazısını ekle
+            const blogPosts = document.getElementById('blog-posts');
+            const newPost = document.createElement('div');
+            const postId = 'post-' + Date.now();
+            newPost.className = 'blog-post';
+            newPost.setAttribute('data-id', postId);
+            const previewText = content.substring(0, 150) + (content.length > 150 ? '...' : '');
+            const showReadMore = content.length > 150;
+            newPost.innerHTML = `
+                <div class="blog-post-content">
+                    ${imageHtml}
+                    <h3>${title}</h3>
+                    <div class="blog-post-meta">${new Date().toLocaleDateString('tr-TR')} - Admin</div>
+                    <p class="blog-preview">${previewText}</p>
+                    <div class="full-content" style="display:none;">${content}</div>
+                    ${showReadMore ? `<a href="#" class="read-more-link" onclick="showFullPost('${postId}'); return false;">Devamını Oku &rarr;</a>` : ''}
+                </div>
+            `;
+            blogPosts.insertBefore(newPost, blogPosts.firstChild);
+            
+            // Yönetici listesine de ekle
+            const adminImageHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; float: right; cursor: pointer;" onclick="openImageModal('${imageUrl}', '${title}')" title="Fotoğrafı büyütmek için tıklayın">` : '';
+            const adminList = document.getElementById('admin-blog-list');
+            const newAdminPost = document.createElement('div');
+            newAdminPost.className = 'post-item';
+            
+            // HTML'i oluştur
+            newAdminPost.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="flex: 1;">
+                        <h4>${title}</h4>
+                        <p style="color: #7f8c8d; font-size: 0.9rem;">${new Date().toLocaleDateString('tr-TR')} - Admin</p>
+                        <div class="post-actions">
+                            <button type="button" class="edit-post-btn btn" style="margin-right: 0.5rem;">✏️ Düzenle</button>
+                            <button type="button" class="delete-post-btn btn btn-danger">🗑️ Sil</button>
+                        </div>
+                    </div>
+                    ${adminImageHtml}
+                </div>
+            `;
+            
+            // DOM'a ekle
+            adminList.insertBefore(newAdminPost, adminList.firstChild);
+            
+            // Event listener'ları DOM'a eklendikten sonra ekle
+            setTimeout(() => {
+                const deleteBtn = newAdminPost.querySelector('.delete-post-btn');
+                const editBtn = newAdminPost.querySelector('.edit-post-btn');
+                
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', function(e) {
+                        deletePost(e.target);
+                    });
+                }
+                
+                if (editBtn) {
+                    editBtn.addEventListener('click', function(e) {
+                        editPost(e.target);
+                    });
+                }
+            }, 50);
+            
+            // Formu temizle
+            document.getElementById('post-title').value = '';
+            document.getElementById('post-content').value = '';
+            clearImage(); // Resim verilerini temizle
+            
+            alert('✅ Blog yazısı başarıyla eklendi!');
+        }
+
+        // Tam blog yazısını göster - resim modal pencerede kaldırıldı
+        function showFullPost(postId) {
+            const post = document.querySelector(`[data-id="${postId}"]`);
+            if (!post) return;
+            
+            const title = post.querySelector('h3').textContent;
+            const meta = post.querySelector('.blog-post-meta').textContent;
+            const fullContent = post.querySelector('.full-content').textContent;
+            
+            // Tam yazı modalı oluştur - resim olmadan
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+                padding: 2rem;
+                box-sizing: border-box;
+            `;
+            
+            modal.innerHTML = `
+                <div style="
+                    background: white;
+                    padding: 2rem;
+                    border-radius: 15px;
+                    max-width: 800px;
+                    width: 100%;
+                    max-height: 85vh;
+                    overflow-y: auto;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+                        <div style="flex: 1;">
+                            <h2 style="color: #2c3e50; margin: 0; font-size: 1.8rem;">${title}</h2>
+                            <p style="color: #7f8c8d; margin: 0.5rem 0 0 0; font-size: 0.95rem;">${meta}</p>
+                        </div>
+                        <button onclick="closeFullPost()" style="
+                            background: #e74c3c;
+                            color: white;
+                            border: none;
+                            width: 35px;
+                            height: 35px;
+                            border-radius: 50%;
+                            cursor: pointer;
+                            font-size: 1.2rem;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            margin-left: 1rem;
+                        ">&times;</button>
+                    </div>
+                    
+                    <div style="
+                        font-size: 1.1rem;
+                        line-height: 1.8;
+                        color: #2c3e50;
+                        text-align: justify;
+                        white-space: pre-wrap;
+                    ">${fullContent}</div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            modal.id = 'full-post-modal';
+            
+            // ESC tuşu ile kapatma
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeFullPost();
+                }
+            });
+        }
+
+        // Tam yazı modalını kapat
+        function closeFullPost() {
+            const modal = document.getElementById('full-post-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // Fotoğraf modal fonksiyonları
+        function openImageModal(imageSrc, imageAlt) {
+            const modal = document.createElement('div');
+            modal.className = 'image-modal';
+            modal.innerHTML = `
+                <img src="${imageSrc}" alt="${imageAlt}" onclick="event.stopPropagation()">
+                <div class="image-modal-close" onclick="closeImageModal()">&times;</div>
+            `;
+            
+            // Modal'ı kapatma event'leri
+            modal.addEventListener('click', closeImageModal);
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeImageModal();
+                }
+            });
+            
+            document.body.appendChild(modal);
+            modal.id = 'image-modal';
+        }
+
+        function closeImageModal() {
+            const modal = document.getElementById('image-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // Düzenleme fonksiyonu - temizlenmiş versiyon
+        function editPost(button) {
+            // Admin panelindeki post'u bul
+            let postItem = button.closest('.post-item');
+            
+            // Eğer closest çalışmazsa manuel olarak yukarı çık
+            if (!postItem) {
+                let currentElement = button;
+                while (currentElement && !currentElement.classList.contains('post-item')) {
+                    currentElement = currentElement.parentElement;
+                }
+                postItem = currentElement;
+            }
+            
+            if (!postItem) {
+                alert('❌ Post elementi bulunamadı!');
+                return;
+            }
+            
+            const titleElement = postItem.querySelector('h4');
+            const title = titleElement ? titleElement.textContent.trim() : '';
+            
+            // Mevcut içeriği bul
+            let currentContent = '';
+            let currentImage = '';
+            const blogPosts = document.querySelectorAll('#blog-posts .blog-post');
+            blogPosts.forEach(post => {
+                const postTitle = post.querySelector('h3').textContent;
+                if (postTitle === title) {
+                    const fullContentDiv = post.querySelector('.full-content');
+                    if (fullContentDiv) {
+                        currentContent = fullContentDiv.textContent;
+                    } else {
+                        const contentP = post.querySelector('.blog-preview');
+                        if (contentP) {
+                            currentContent = contentP.textContent.replace('...', '');
+                        }
+                    }
+                    
+                    const img = post.querySelector('img');
+                    if (img) {
+                        currentImage = img.src;
+                    }
+                }
+            });
+
+            // Düzenleme modalı oluştur
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            `;
+            
+            const uniqueId = Date.now();
+            modal.innerHTML = `
+                <div style="
+                    background: white;
+                    padding: 2rem;
+                    border-radius: 10px;
+                    max-width: 600px;
+                    width: 90%;
+                    max-height: 80vh;
+                    overflow-y: auto;
+                ">
+                    <h3 style="margin-bottom: 1rem; color: #2c3e50;">Blog Yazısını Düzenle</h3>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Başlık:</label>
+                        <input type="text" id="edit-title-${uniqueId}" value="${title}" style="
+                            width: 100%;
+                            padding: 0.8rem;
+                            border: 1px solid #ddd;
+                            border-radius: 5px;
+                            font-size: 1rem;
+                        ">
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Fotoğraf URL'i:</label>
+                        <input type="url" id="edit-image-${uniqueId}" value="${currentImage}" placeholder="https://example.com/resim.jpg" style="
+                            width: 100%;
+                            padding: 0.8rem;
+                            border: 1px solid #ddd;
+                            border-radius: 5px;
+                            font-size: 1rem;
+                        ">
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">İçerik:</label>
+                        <textarea id="edit-content-${uniqueId}" rows="8" style="
+                            width: 100%;
+                            padding: 0.8rem;
+                            border: 1px solid #ddd;
+                            border-radius: 5px;
+                            font-size: 1rem;
+                            resize: vertical;
+                        ">${currentContent}</textarea>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button type="button" class="cancel-edit-btn" style="
+                            background: #95a5a6;
+                            color: white;
+                            padding: 0.8rem 1.5rem;
+                            border: none;
+                            border-radius: 5px;
+                            cursor: pointer;
+                        ">❌ İptal</button>
+                        <button type="button" class="save-edit-btn" style="
+                            background: #3498db;
+                            color: white;
+                            padding: 0.8rem 1.5rem;
+                            border: none;
+                            border-radius: 5px;
+                            cursor: pointer;
+                        ">💾 Kaydet</button>
+                    </div>
+                </div>
+            `;
+            
+            // Modal'ı DOM'a ekle
+            document.body.appendChild(modal);
+            modal.id = 'edit-modal';
+            
+            // DOM'a eklendikten sonra event listener'ları ekle
+            setTimeout(() => {
+                const cancelBtn = modal.querySelector('.cancel-edit-btn');
+                const saveBtn = modal.querySelector('.save-edit-btn');
+                
+                if (cancelBtn) {
+                    cancelBtn.addEventListener('click', function() {
+                        modal.remove();
+                    });
+                }
+                
+                if (saveBtn) {
+                    saveBtn.addEventListener('click', function() {
+                        // Form alanlarını bul
+                        const titleInput = document.getElementById(`edit-title-${uniqueId}`);
+                        const imageInput = document.getElementById(`edit-image-${uniqueId}`);
+                        const contentInput = document.getElementById(`edit-content-${uniqueId}`);
+                        
+                        if (titleInput && contentInput) {
+                            const newTitle = titleInput.value.trim();
+                            const newContent = contentInput.value.trim();
+                            const newImage = imageInput ? imageInput.value.trim() : '';
+                            
+                            if (!newTitle || !newContent) {
+                                alert('Lütfen başlık ve içerik alanlarını doldurun!');
+                                return;
+                            }
+                            
+                            // Kaydetme işlemini başlat
+                            saveEditedPost(title, newTitle, newContent, newImage, modal);
+                        } else {
+                            alert('❌ Form alanları bulunamadı!');
+                        }
+                    });
+                }
+            }, 100);
+        }
+
+        // Düzenlenmiş yazıyı kaydet - fotoğraf modal özelliği eklendi
+        function saveEditedPost(originalTitle, newTitle, newContent, newImage, modal) {
+            try {
+                // Admin panelinde güncelle
+                const adminPosts = document.querySelectorAll('#admin-blog-list .post-item');
+                adminPosts.forEach(post => {
+                    const postTitle = post.querySelector('h4').textContent.trim();
+                    if (postTitle === originalTitle) {
+                        post.querySelector('h4').textContent = newTitle;
+                        
+                        // Fotoğrafı güncelle - modal özelliği ile
+                        const existingImg = post.querySelector('img');
+                        if (newImage) {
+                            if (existingImg) {
+                                existingImg.src = newImage;
+                                existingImg.alt = newTitle;
+                                existingImg.onclick = function() { openImageModal(newImage, newTitle); };
+                            } else {
+                                const imgHtml = `<img src="${newImage}" alt="${newTitle}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; cursor: pointer;" onclick="openImageModal('${newImage}', '${newTitle}')" title="Fotoğrafı büyütmek için tıklayın">`;
+                                post.querySelector('div').insertAdjacentHTML('beforeend', imgHtml);
+                            }
+                        } else if (existingImg) {
+                            existingImg.remove();
+                        }
+                    }
+                });
+                
+                // Blog sayfasında güncelle
+                const blogPosts = document.querySelectorAll('#blog-posts .blog-post');
+                blogPosts.forEach(post => {
+                    const postTitle = post.querySelector('h3').textContent.trim();
+                    if (postTitle === originalTitle) {
+                        post.querySelector('h3').textContent = newTitle;
+                        
+                        // Preview text güncelle
+                        const previewText = newContent.length > 150 ? newContent.substring(0, 150) + '...' : newContent;
+                        
+                        const previewP = post.querySelector('.blog-preview');
+                        if (previewP) {
+                            previewP.textContent = previewText;
+                        }
+                        
+                        // Full content güncelle
+                        const fullContentDiv = post.querySelector('.full-content');
+                        if (fullContentDiv) {
+                            fullContentDiv.textContent = newContent;
+                        }
+                        
+                        // Fotoğrafı güncelle - modal özelliği ile
+                        const existingImg = post.querySelector('img');
+                        if (newImage) {
+                            if (existingImg) {
+                                existingImg.src = newImage;
+                                existingImg.alt = newTitle;
+                                existingImg.onclick = function() { openImageModal(newImage, newTitle); };
+                                existingImg.title = "Fotoğrafı büyütmek için tıklayın";
+                            } else {
+                                const imgHtml = `<img src="${newImage}" alt="${newTitle}" onclick="openImageModal('${newImage}', '${newTitle}')" title="Fotoğrafı büyütmek için tıklayın">`;
+                                post.querySelector('.blog-post-content').insertAdjacentHTML('afterbegin', imgHtml);
+                            }
+                        } else if (existingImg) {
+                            existingImg.remove();
+                        }
+                    }
+                });
+                
+                // Modal'ı kapat
+                modal.remove();
+                alert('✅ Blog yazısı başarıyla güncellendi!');
+                
+            } catch (error) {
+                alert('❌ Kaydetme sırasında bir hata oluştu!');
+            }
+        }
+
+        // Post silme - temizlenmiş versiyon
+        function deletePost(button) {
+            // Admin panelindeki post'u bul
+            let postItem = button.closest('.post-item');
+            
+            // Eğer closest çalışmazsa manuel olarak yukarı çık
+            if (!postItem) {
+                let currentElement = button;
+                while (currentElement && !currentElement.classList.contains('post-item')) {
+                    currentElement = currentElement.parentElement;
+                }
+                postItem = currentElement;
+            }
+            
+            if (!postItem) {
+                alert('❌ Post elementi bulunamadı!');
+                return;
+            }
+            
+            // Başlığı al
+            const titleElement = postItem.querySelector('h4');
+            const title = titleElement ? titleElement.textContent.trim() : 'Başlık bulunamadı';
+            
+            // Admin panelinden sil
+            postItem.remove();
+            
+            // Blog sayfasından da sil
+            const blogPosts = document.querySelectorAll('#blog-posts .blog-post h3');
+            for (let i = 0; i < blogPosts.length; i++) {
+                if (blogPosts[i].textContent.trim() === title) {
+                    blogPosts[i].closest('.blog-post').remove();
+                    break;
+                }
+            }
+            
+            alert('🗑️ Blog yazısı silindi: ' + title);
+        }
+
+        // Sayfa yükleme işlemleri
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gizli admin ipucunu 10 saniye sonra tamamen gizle
+            setTimeout(function() {
+                const adminHint = document.querySelector('[title="Admin Erişimi: Shift + Ctrl + Q"]');
+                if (adminHint) {
+                    adminHint.style.display = 'none';
+                }
+            }, 10000); // 10 saniye
+        });
+
+        // Resim yükleme fonksiyonları
+        let currentImageData = null;
+
+        function handleImageUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            // Dosya türü kontrolü
+            if (!file.type.startsWith('image/')) {
+                alert('❌ Lütfen sadece resim dosyası seçin!');
+                input.value = '';
+                return;
+            }
+
+            // Dosya boyutu kontrolü (5MB limit)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('❌ Resim dosyası 5MB\'dan küçük olmalıdır!');
+                input.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentImageData = e.target.result;
+                showImagePreview(currentImageData, file.name);
+                
+                // URL alanını temizle
+                document.getElementById('post-image-url').value = '';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function showImagePreview(imageSrc, fileName) {
+            const preview = document.getElementById('image-preview');
+            const previewImg = document.getElementById('preview-img');
+            
+            previewImg.src = imageSrc;
+            previewImg.alt = fileName;
+            preview.style.display = 'block';
+        }
+
+        function clearImage() {
+            currentImageData = null;
+            document.getElementById('post-image-file').value = '';
+            document.getElementById('post-image-url').value = '';
+            document.getElementById('image-preview').style.display = 'none';
+        }
+
+        function getCurrentImageSrc() {
+            // Önce yüklenen dosyayı kontrol et
+            if (currentImageData) {
+                return currentImageData;
+            }
+            
+            // Sonra URL'i kontrol et
+            const urlInput = document.getElementById('post-image-url');
+            if (urlInput && urlInput.value.trim()) {
+                return urlInput.value.trim();
+            }
+            
+            return null;
+        }
+
+        // Klavye kısayolları
+        document.addEventListener('keydown', function(e) {
+            // Gizli yönetici girişi için kısayol (Shift + Ctrl + Q)
+            if (e.shiftKey && e.ctrlKey && e.key.toLowerCase() === 'q') {
+                e.preventDefault(); // Sayfa kapanmasını engelle
+                showPage('admin-login');
+                return;
+            }
+            
+            // Hızlı çıkış için kısayol (Ctrl + Shift + L) - admin girişliyken
+            if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'l' && isAdminLoggedIn) {
+                e.preventDefault();
+                logout();
+            }
+        });
+    </script>
+</body>
+</html>
