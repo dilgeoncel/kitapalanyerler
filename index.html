@@ -1424,16 +1424,27 @@
 
         // JSON Dosyası ile Blog Sistemi - Herkes Görebilir
         
-        // JSON dosyasından blog'ları yükle
+        // JSON dosyasından blog'ları yükle - örnek bloglar kaldırıldı
         async function loadBlogsFromJSON() {
+            console.log('🔄 Blog yükleme başladı...');
+            
             try {
-                const response = await fetch('blogs.json?v=' + Date.now()); // Cache busting
+                const jsonUrl = 'blogs.json?v=' + Date.now();
+                console.log('📡 JSON URL:', jsonUrl);
+                
+                const response = await fetch(jsonUrl);
+                console.log('📥 Response status:', response.status);
+                console.log('📥 Response OK:', response.ok);
+                
                 if (!response.ok) {
-                    throw new Error('Blog dosyası bulunamadı');
+                    throw new Error(`blogs.json yüklenemedi - Status: ${response.status}`);
                 }
                 
                 const data = await response.json();
+                console.log('📊 JSON data:', data);
+                
                 const blogs = data.posts || [];
+                console.log('📚 Blog sayısı:', blogs.length);
                 
                 const blogPosts = document.getElementById('blog-posts');
                 const adminBlogList = document.getElementById('admin-blog-list');
@@ -1446,53 +1457,63 @@
                 }
                 
                 if (blogs.length === 0) {
+                    console.log('📝 Blog bulunamadı, boş durum gösteriliyor');
                     showEmptyBlogState();
                     if (adminBlogList) showEmptyAdminState();
                     return;
                 }
                 
                 // Blog yazılarını göster
-                blogs.forEach(blog => {
+                console.log('✅ Blog yazıları ekleniyor...');
+                blogs.forEach((blog, index) => {
+                    console.log(`📝 Blog ${index + 1}:`, blog.title);
                     addBlogToPage(blog);
                     if (adminBlogList) addBlogToAdminPanel(blog);
                 });
                 
+                console.log('🎉 Blog yükleme tamamlandı!');
+                
             } catch (error) {
-                console.error('Blog yükleme hatası:', error);
+                console.error('❌ Blog yükleme hatası:', error);
+                
                 showEmptyBlogState();
                 
-                // Eğer blogs.json yoksa örnek blog'lar göster
-                if (error.message.includes('Blog dosyası bulunamadı')) {
-                    showSampleBlogs();
-                }
+                // Detaylı hata mesajı göster
+                const blogPosts = document.getElementById('blog-posts');
+                blogPosts.innerHTML = `
+                    <div class="error-state" style="text-align: center; padding: 4rem; color: #e74c3c; background: #fff5f5; border-radius: 10px; border: 1px solid #fed7d7;">
+                        <h2 style="color: #c53030; margin-bottom: 1rem;">⚠️ Blog Yükleme Hatası</h2>
+                        <p style="font-size: 1.1rem; margin-bottom: 1rem;"><strong>Hata:</strong> ${error.message}</p>
+                        <p style="margin-bottom: 1rem;">blogs.json dosyası kontrol ediliyor...</p>
+                        <button onclick="loadBlogsFromJSON()" style="
+                            background: #3498db;
+                            color: white;
+                            border: none;
+                            padding: 0.8rem 1.5rem;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            font-weight: bold;
+                        ">🔄 Tekrar Dene</button>
+                        
+                        <div style="margin-top: 2rem; padding: 1rem; background: #f7fafc; border-radius: 8px; text-align: left;">
+                            <h4 style="color: #2d3748; margin-bottom: 1rem;">🔍 Sorun Giderme:</h4>
+                            <ol style="color: #4a5568; line-height: 1.6;">
+                                <li><strong>blogs.json dosyası var mı?</strong><br>
+                                    <a href="blogs.json" target="_blank" style="color: #3182ce;">blogs.json'u aç</a> - Dosya açılıyor mu?</li>
+                                <li><strong>JSON syntax doğru mu?</strong><br>
+                                    Virgül, parantez hataları kontrol edin</li>
+                                <li><strong>GitHub'da commit yapıldı mı?</strong><br>
+                                    Değişiklikler kaydedildi mi?</li>
+                                <li><strong>Cache sorunu var mı?</strong><br>
+                                    Ctrl+F5 ile hard refresh yapın</li>
+                            </ol>
+                        </div>
+                    </div>
+                `;
             }
         }
 
-        // Örnek blog yazıları göster (blogs.json yoksa)
-        function showSampleBlogs() {
-            const sampleBlogs = [
-                {
-                    id: 'sample-1',
-                    title: 'İstanbul\'da En Değerli Kitap Türleri',
-                    content: 'Antika kitaplar, ilk baskılar ve nadir eserler İstanbul\'da en yüksek fiyatları alıyor. Özellikle Osmanlıca kitaplar, imzalı eserler ve akademik yayınlar için özel değerlendirme yapıyoruz. Üniversite kitapları da güncel baskıları ile iyi fiyatlara alınıyor. Tıp, hukuk, mühendislik kitapları özellikle rağbet görüyor. Koleksiyonunuzda değerli kitaplar olduğunu düşünüyorsanız uzman ekibimizle iletişime geçin.',
-                    imageUrl: 'https://kultur.istanbul/gorsel/2022/03/kapak.png',
-                    date: '22.01.2025',
-                    author: 'Kitap Uzmanı'
-                },
-                {
-                    id: 'sample-2', 
-                    title: 'Evden Kitap Toplama Servisi Nasıl Çalışır?',
-                    content: 'WhatsApp üzerinden iletişime geçtikten sonra uzman ekibimiz adresinize gelir. Kitaplarınızın değer tespitini yapar ve anında nakit ödeme yapar. Hizmet tamamen ücretsizdir ve İstanbul genelinde geçerlidir. Randevu almak için +90 532 688 66 35 numaralı WhatsApp hattımızı arayabilirsiniz. Aynı gün hizmet imkânı da bulunmaktadır.',
-                    imageUrl: 'https://kultur.istanbul/gorsel/2022/03/kapak.png',
-                    date: '20.01.2025', 
-                    author: 'Kitap Uzmanı'
-                }
-            ];
-            
-            sampleBlogs.forEach(blog => {
-                addBlogToPage(blog);
-            });
-        }
+
 
         // Sayfaya blog ekle
         function addBlogToPage(blog) {
@@ -1697,14 +1718,24 @@
             }
         }
 
-        // Boş durumları göster
+        // Boş durumları göster - örnek bloglar kaldırıldı
         function showEmptyBlogState() {
             const blogPosts = document.getElementById('blog-posts');
             blogPosts.innerHTML = `
                 <div class="empty-state" style="text-align: center; padding: 4rem; color: #7f8c8d;">
                     <h2 style="color: #95a5a6; margin-bottom: 1rem;">📚 Blog Yazıları</h2>
-                    <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">Blog yazıları yükleniyor...</p>
-                    <p style="margin: 0;">blogs.json dosyasından blog yazıları alınıyor.</p>
+                    <p style="font-size: 1.1rem; margin-bottom: 1rem;">Henüz hiçbir blog yazısı eklenmemiş.</p>
+                    <p style="margin-bottom: 1.5rem; color: #95a5a6;">Admin panelinden ilk blog yazınızı ekleyebilirsiniz.</p>
+                    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; margin-top: 2rem; border-left: 4px solid #3498db;">
+                        <h4 style="color: #2c3e50; margin-bottom: 1rem;">🎯 Blog Nasıl Eklenir?</h4>
+                        <ol style="text-align: left; color: #34495e; line-height: 1.6; max-width: 400px; margin: 0 auto;">
+                            <li><strong>Shift + Ctrl + Q</strong> ile admin paneline girin</li>
+                            <li><strong>Blog formunu</strong> doldurun</li>
+                            <li><strong>JSON verisini</strong> kopyalayın</li>
+                            <li><strong>GitHub'da blogs.json</strong> dosyasını güncelleyin</li>
+                            <li><strong>Değişiklikleri</strong> kaydedin</li>
+                        </ol>
+                    </div>
                 </div>
             `;
         }
@@ -1716,16 +1747,16 @@
             adminBlogList.innerHTML = `
                 <div class="empty-state" style="text-align: center; padding: 2rem; color: #7f8c8d; background: #f8f9fa; border-radius: 10px; border: 2px dashed #ddd;">
                     <h4 style="color: #95a5a6; margin-bottom: 1rem;">📝 Blog Yönetimi</h4>
-                    <p style="margin-bottom: 0.5rem;">blogs.json dosyasından blog yazıları yüklendi.</p>
-                    <p style="margin: 0; font-size: 0.9rem;">Yeni blog eklemek için yukarıdaki formu kullanın.</p>
+                    <p style="margin-bottom: 1rem;">Henüz hiçbir blog yazısı eklenmemiş.</p>
+                    <p style="margin-bottom: 1.5rem; font-size: 0.9rem;">Yukarıdaki formdan ilk blog yazınızı ekleyebilirsiniz.</p>
                     <div style="margin-top: 1rem; padding: 1rem; background: #e3f2fd; border-radius: 8px; border-left: 4px solid #2196f3;">
-                        <h5 style="color: #1976d2; margin-bottom: 0.5rem;">💡 Nasıl Blog Eklerim?</h5>
+                        <h5 style="color: #1976d2; margin-bottom: 0.5rem;">💡 Blog Ekleme Süreci</h5>
                         <p style="margin: 0; font-size: 0.9rem; color: #424242; line-height: 1.5;">
                             1. Yukarıdaki formdan blog oluşturun<br>
                             2. JSON verisini kopyalayın<br>
                             3. GitHub'da blogs.json dosyasını düzenleyin<br>
                             4. Yeni blog'u posts dizisinin başına ekleyin<br>
-                            5. Değişiklikleri kaydedin
+                            5. Değişiklikleri kaydedin → Site güncellenir
                         </p>
                     </div>
                 </div>
