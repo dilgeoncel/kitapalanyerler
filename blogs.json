@@ -1,5 +1,13 @@
 {
   "posts": [
-    
+    {
+      "id": "blog-1753287197391",
+      "title": "Gökyüzüne Merdiven",
+      "content": "Ä°nsanoÄlu, tarihin baÅlangÄ±cÄ±ndan bu yana evrenin, yaÅamÄ±n ve yaÅamdan sonrasÄ±nÄ± anlaÅÄ±lamayan gizemlerini merak etmiÅ ve hep gÃ¶kyÃ¼zÃ¼n...",
+      "imageUrl": "",
+      "date": "23.07.2025",
+      "author": "Admin",
+      "createdAt": "2025-07-23T16:13:17.402Z"
+    }
   ]
 }
