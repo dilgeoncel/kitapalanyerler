@@ -1,6 +1,15 @@
 {
   "posts": [
     {
+      "id": "blog-1753287236401",
+      "title": "Gökyüzüne Merdiven",
+      "content": "Resim yüklenemedi! Lütfen geçerli bir resim URL'si girin.",
+      "imageUrl": "https://dilgeoncel.github.io/kitapalanyerler/",
+      "date": "23.07.2025",
+      "author": "Admin",
+      "createdAt": "2025-07-23T16:13:56.401Z"
+    },
+    {
       "id": "blog-1753287197391",
       "title": "Gökyüzüne Merdiven",
       "content": "Ä°nsanoÄlu, tarihin baÅlangÄ±cÄ±ndan bu yana evrenin, yaÅamÄ±n ve yaÅamdan sonrasÄ±nÄ± anlaÅÄ±lamayan gizemlerini merak etmiÅ ve hep gÃ¶kyÃ¼zÃ¼n...",
