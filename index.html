@@ -1183,7 +1183,7 @@
                     
                     <!-- Admin Console -->
                     <div id="admin-console" class="admin-console" style="display: none;">
-                        <div class="console-line console-info">[SYSTEM] Admin Console v2025.6 hazır - İşlemleriniz burada görüntülenecek</div>
+                        <div class="console-line console-info">[SYSTEM] Admin Console v2025.7 hazır - İşlemleriniz burada görüntülenecek</div>
                     </div>
                 </div>
                 
@@ -1296,7 +1296,7 @@
                 ikinci el kitap satış fiyatları, antika kitap değer tespiti, üniversite kitapları satmak
             </p>
             <!-- Gizli ipucu - sadece bilenlerin anlayacağı -->
-            <p style="font-size: 0.7rem; color: #7f8c8d; margin-top: 0.5rem;">v2025.6</p>
+            <p style="font-size: 0.7rem; color: #7f8c8d; margin-top: 0.5rem;">v2025.7</p>
         </div>
     </footer>
 
@@ -2199,7 +2199,7 @@ Token'ınızı aşağıya yapıştırın:`;
                     // Blog listesini yenile
                     setTimeout(() => {
                         loadBlogsFromJSON();
-                        logToConsole('Blog listesi yenilendi', 'info');
+                        logToConsole('Blog listesi yenilendi ve sıralandı', 'info');
                     }, 2000);
                 }
 
@@ -2235,7 +2235,7 @@ Token'ınızı aşağıya yapıştırın:`;
 
         // Blog sistemi - JSON dosyası tabanlı
         
-        // JSON dosyasından blog'ları yükle - TÜRKÇE KARAKTER DESTEKLİ
+        // JSON dosyasından blog'ları yükle - Tarih sıralamalı
         async function loadBlogsFromJSON() {
             try {
                 const response = await fetch('blogs.json?v=' + Date.now());
@@ -2255,6 +2255,14 @@ Token'ınızı aşağıya yapıştırın:`;
                     blogs = [];
                 }
                 
+                // Blog'ları tarihe göre sırala (en yeni üstte)
+                blogs.sort((a, b) => {
+                    // createdAt varsa onu kullan, yoksa id'den timestamp çıkar
+                    const timeA = a.createdAt ? new Date(a.createdAt).getTime() : parseInt(a.id.split('-')[1]) || 0;
+                    const timeB = b.createdAt ? new Date(b.createdAt).getTime() : parseInt(b.id.split('-')[1]) || 0;
+                    return timeB - timeA; // Büyükten küçüğe (en yeni üstte)
+                });
+                
                 // Sayfadaki blog alanları
                 const blogPosts = document.getElementById('blog-posts');
                 const adminBlogList = document.getElementById('admin-blog-list');
@@ -2273,8 +2281,10 @@ Token'ınızı aşağıya yapıştırın:`;
                     return;
                 }
                 
-                // Blog'ları ters sırada göster (en yeni üstte)
-                blogs.reverse().forEach(blog => {
+                logToConsole(`${blogs.length} blog yüklendi ve tarihe göre sıralandı`, 'success');
+                
+                // Blog'ları sayfaya ekle (sıralama zaten yapıldı)
+                blogs.forEach(blog => {
                     if (blogPosts) addBlogToPage(blog);
                     if (adminBlogList) addBlogToAdminPanel(blog);
                 });
