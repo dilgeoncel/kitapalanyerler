@@ -1598,10 +1598,13 @@ Token'ınızı aşağıya yapıştırın:`;
             }
         }
 
-        // GitHub API ile blogs.json dosyasını güncelle - TÜRKÇE KARAKTER SORUNU DÜZELTİLMİŞ
+        // GitHub API ile blogs.json dosyasını güncelle - CONSOLE LOG EKLENDİ
         async function updateBlogsJSON(newBlog) {
+            console.log('GitHub API güncelleme başlatıldı');
+            
             const token = getGitHubToken();
             if (!token) {
+                console.warn('GitHub token bulunamadı');
                 const setupToken = confirm('GitHub Token bulunamadı!\n\nOtomatik blog ekleme için token gerekli.\n\nToken ayarlamak ister misiniz?');
                 if (setupToken && setGitHubToken()) {
                     return updateBlogsJSON(newBlog);
@@ -1609,8 +1612,11 @@ Token'ınızı aşağıya yapıştırın:`;
                 throw new Error('GitHub token bulunamadı');
             }
 
+            console.log('GitHub token mevcut, API çağrısı yapılıyor');
+
             try {
                 // 1. Önce blogs.json dosyasının varlığını kontrol et
+                console.log('Mevcut blogs.json dosyası kontrol ediliyor...');
                 const getFileResponse = await fetch('https://api.github.com/repos/dilgeoncel/kitapalanyerler/contents/blogs.json', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -1623,10 +1629,10 @@ Token'ınızı aşağıya yapıştırın:`;
                 let sha;
 
                 if (getFileResponse.status === 404) {
-                    // Dosya yok, yeni oluştur
+                    console.log('blogs.json dosyası yok, yeni oluşturulacak');
                     currentContent.posts = [newBlog];
                 } else if (getFileResponse.ok) {
-                    // Dosya var, mevcut içeriği al
+                    console.log('Mevcut blogs.json dosyası bulundu, içerik okunuyor');
                     fileData = await getFileResponse.json();
                     sha = fileData.sha;
                     
@@ -1636,9 +1642,11 @@ Token'ınızı aşağıya yapıştırın:`;
                         if (!Array.isArray(currentContent.posts)) {
                             currentContent.posts = [];
                         }
-                        currentContent.posts.unshift(newBlog);
+                        console.log('Mevcut blog sayısı:', currentContent.posts.length);
+                        currentContent.posts.unshift(newBlog); // En başa ekle
+                        console.log('Yeni blog eklendi, toplam blog sayısı:', currentContent.posts.length);
                     } catch (error) {
-                        console.error('JSON parse hatası:', error);
+                        console.error('Mevcut JSON parse hatası:', error);
                         currentContent = { posts: [newBlog] };
                     }
                 } else {
@@ -1646,10 +1654,12 @@ Token'ınızı aşağıya yapıştırın:`;
                 }
 
                 // 2. İçeriği güncelle/oluştur - Türkçe karakter güvenli
+                console.log('JSON içeriği hazırlanıyor...');
                 const updatedContent = JSON.stringify(currentContent, null, 2);
                 const encodedContent = safeBase64Encode(updatedContent);
 
                 // 3. GitHub'a gönder
+                console.log('GitHub\'a gönderiliyor...');
                 const updateResponse = await fetch('https://api.github.com/repos/dilgeoncel/kitapalanyerler/contents/blogs.json', {
                     method: 'PUT',
                     headers: {
@@ -1666,9 +1676,11 @@ Token'ınızı aşağıya yapıştırın:`;
 
                 if (!updateResponse.ok) {
                     const errorData = await updateResponse.json();
+                    console.error('GitHub API güncelleme hatası:', errorData);
                     throw new Error(`GitHub API Güncelleme Hatası: ${updateResponse.status}\n${JSON.stringify(errorData, null, 2)}`);
                 }
 
+                console.log('GitHub API güncelleme başarılı');
                 return true;
 
             } catch (error) {
@@ -1681,13 +1693,16 @@ Token'ınızı aşağıya yapıştırın:`;
 
         // Resim yükleme fonksiyonları
         
-        // Dosyadan resim yükleme
+        // Dosyadan resim yükleme - CONSOLE LOG EKLENDİ
         function handleImageUpload(input) {
             const file = input.files[0];
             if (!file) return;
             
+            console.log('Dosya seçildi:', file.name, 'Boyut:', file.size, 'Tip:', file.type);
+            
             // Dosya tipini kontrol et
             if (!file.type.startsWith('image/')) {
+                console.error('Geçersiz dosya tipi:', file.type);
                 alert('❌ Lütfen sadece resim dosyası seçin!');
                 input.value = '';
                 return;
@@ -1695,10 +1710,13 @@ Token'ınızı aşağıya yapıştırın:`;
             
             // Dosya boyutunu kontrol et (2MB limit)
             if (file.size > 2 * 1024 * 1024) {
+                console.error('Dosya çok büyük:', file.size);
                 alert('❌ Resim dosyası 2MB\'dan küçük olmalı!');
                 input.value = '';
                 return;
             }
+            
+            console.log('Dosya kontrolleri geçti, okuma başlıyor...');
             
             // Progress bar'ı göster
             showUploadProgress();
@@ -1707,6 +1725,7 @@ Token'ınızı aşağıya yapıştırın:`;
             const reader = new FileReader();
             reader.onload = function(e) {
                 const base64 = e.target.result;
+                console.log('Dosya base64\'e çevrildi, uzunluk:', base64.length);
                 
                 // Önizleme göster
                 showImagePreview(base64);
@@ -1719,6 +1738,7 @@ Token'ınızı aşağıya yapıştırın:`;
             };
             
             reader.onerror = function() {
+                console.error('FileReader hatası');
                 alert('❌ Resim yüklenirken hata oluştu!');
                 hideUploadProgress();
             };
@@ -1727,19 +1747,25 @@ Token'ınızı aşağıya yapıştırın:`;
             reader.readAsDataURL(file);
         }
         
-        // URL'den resim yükleme
+        // URL'den resim yükleme - CONSOLE LOG EKLENDİ
         function handleURLChange(input) {
             const url = input.value.trim();
+            console.log('URL girişi:', url);
+            
             if (!url) {
+                console.log('URL boş, resim temizleniyor');
                 clearImage();
                 return;
             }
             
             // URL formatını kontrol et
             if (!isValidImageURL(url)) {
+                console.error('Geçersiz resim URL\'si:', url);
                 alert('❌ Geçerli bir resim URL\'si girin!\n\nÖrnekler:\n• https://example.com/image.jpg\n• https://images.unsplash.com/photo-123.png');
                 return;
             }
+            
+            console.log('URL formatı geçerli, önizleme gösteriliyor');
             
             // Önizleme göster
             showImagePreview(url);
@@ -1759,7 +1785,7 @@ Token'ınızı aşağıya yapıştırın:`;
             }
         }
         
-        // Resim önizlemesi göster
+        // Resim önizlemesi göster - HATA DÜZELTİLMİŞ
         function showImagePreview(src) {
             const previewDiv = document.getElementById('image-preview');
             const previewImg = document.getElementById('preview-img');
@@ -1767,15 +1793,28 @@ Token'ınızı aşağıya yapıştırın:`;
             previewImg.src = src;
             previewDiv.style.display = 'block';
             
-            // Resim yüklenme hatalarını yakala
+            // Resim yüklenme hatalarını yakala - daha toleranslı
             previewImg.onerror = function() {
-                alert('❌ Resim yüklenemedi! Lütfen geçerli bir resim URL\'si girin.');
-                clearImage();
+                console.warn('Resim yükleme hatası:', src);
+                // Sadece URL'ler için hata göster, base64 için gösterme
+                if (src.startsWith('http')) {
+                    alert('❌ Resim yüklenemedi! Lütfen geçerli bir resim URL\'si girin.');
+                    clearImage();
+                } else {
+                    // Base64 resimler için hata gösterme, sadece console'a yaz
+                    console.log('Base64 resim işleme hatası, devam ediliyor...');
+                }
+            };
+            
+            // Resim başarıyla yüklendiğinde
+            previewImg.onload = function() {
+                console.log('Resim başarıyla yüklendi:', src.substring(0, 50) + '...');
             };
         }
         
-        // Resmi temizle
+        // Resmi temizle - CONSOLE LOG EKLENDİ
         function clearImage() {
+            console.log('Resim temizleniyor');
             document.getElementById('image-preview').style.display = 'none';
             document.getElementById('preview-img').src = '';
             document.getElementById('post-image-file').value = '';
@@ -1820,14 +1859,19 @@ Token'ınızı aşağıya yapıştırın:`;
             }, 500);
         }
         
-        // Blog yazısı ekleme fonksiyonu - resim desteği ile güncellenmiş
+        // Blog yazısı ekleme fonksiyonu - CONSOLE LOG EKLENDİ
         async function handleBlogSubmit() {
+            console.log('Blog ekleme işlemi başlatıldı');
+            
             const title = document.getElementById('post-title').value;
             const content = document.getElementById('post-content').value;
             let imageUrl = '';
 
+            console.log('Form verileri - Başlık:', title.length, 'karakter, İçerik:', content.length, 'karakter');
+
             // Form validasyonu
             if (!title.trim() || !content.trim()) {
+                console.error('Form validasyonu başarısız');
                 alert('❌ Lütfen başlık ve içerik alanlarını doldurun!');
                 return;
             }
@@ -1838,8 +1882,12 @@ Token'ınızı aşağıya yapıştırın:`;
             
             if (previewImg && previewImg.src && previewImg.src !== window.location.href) {
                 imageUrl = previewImg.src; // Base64 veya URL
+                console.log('Resim kaynağı: preview img, tip:', imageUrl.startsWith('data:') ? 'base64' : 'URL');
             } else if (imageUrlInput && imageUrlInput.value.trim()) {
                 imageUrl = imageUrlInput.value.trim();
+                console.log('Resim kaynağı: URL input');
+            } else {
+                console.log('Resim yok');
             }
 
             // Submit butonunu devre dışı bırak
@@ -1859,16 +1907,21 @@ Token'ınızı aşağıya yapıştırın:`;
                     createdAt: new Date().toISOString()
                 };
 
+                console.log('Blog objesi oluşturuldu:', blog.id, blog.title);
+
                 // GitHub API ile blog'u ekle
                 const result = await updateBlogsJSON(blog);
 
                 if (result) {
+                    console.log('Blog başarıyla eklendi');
                     alert('✅ Blog yazısı başarıyla eklendi ve yayınlandı!\n\nSayfayı yenileyerek yeni blog yazınızı görebilirsiniz.');
                     
                     // Formu tamamen temizle
                     document.getElementById('post-title').value = '';
                     document.getElementById('post-content').value = '';
                     clearImage(); // Resim önizlemesini de temizle
+                    
+                    console.log('Form temizlendi, blog listesi yenileniyor...');
                     
                     // Blog listesini yenile
                     setTimeout(() => {
@@ -1883,6 +1936,7 @@ Token'ınızı aşağıya yapıştırın:`;
                 // Submit butonunu normale döndür
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '📤 Yazıyı Yayınla';
+                console.log('Submit butonu normale döndürüldü');
             }
         }
 
@@ -1950,8 +2004,18 @@ Token'ınızı aşağıya yapıştırın:`;
                     return;
                 }
                 
-                // Blog'ları ters sırada göster (en yeni üstte)
-                blogs.reverse().forEach(blog => {
+                // Blog'ları tarihe göre sırala (en yeni üstte)
+                blogs.sort((a, b) => {
+                    // createdAt varsa onu kullan, yoksa id'den tarih çıkar
+                    const dateA = a.createdAt ? new Date(a.createdAt) : new Date(parseInt(a.id.replace('blog-', '')));
+                    const dateB = b.createdAt ? new Date(b.createdAt) : new Date(parseInt(b.id.replace('blog-', '')));
+                    return dateB - dateA; // En yeni üstte
+                });
+                
+                console.log('Blog sayısı:', blogs.length, 'En yeni blog:', blogs[0]?.title);
+                
+                // Blog'ları göster
+                blogs.forEach(blog => {
                     if (blogPosts) addBlogToPage(blog);
                     if (adminBlogList) addBlogToAdminPanel(blog);
                 });
