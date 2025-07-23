@@ -1999,18 +1999,13 @@ Token'ınızı aşağıya yapıştırın:`;
             blogPosts.appendChild(newPost);
         }
 
-        // Admin paneline blog ekle - TÜRKÇE KARAKTER SORUNU DÜZELTİLMİŞ
+        // Admin paneline blog ekle - ESKİ HAL
         function addBlogToAdminPanel(blog) {
             const adminList = document.getElementById('admin-blog-list');
             if (!adminList) return;
             
-            // Türkçe karakterleri düzelt
-            const fixedTitle = fixTurkishChars(blog.title);
-            const fixedDate = fixTurkishChars(blog.date);
-            const fixedAuthor = fixTurkishChars(blog.author);
-            
             const adminImageHtml = blog.imageUrl ? 
-                `<img src="${blog.imageUrl}" alt="${safeTextContent(fixedTitle)}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; float: right; cursor: pointer;" onclick="openImageModal('${blog.imageUrl}', '${safeTextContent(fixedTitle)}')" title="Fotoğrafı büyütmek için tıklayın">` : '';
+                `<img src="${blog.imageUrl}" alt="${safeTextContent(blog.title)}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; float: right; cursor: pointer;" onclick="openImageModal('${blog.imageUrl}', '${safeTextContent(blog.title)}')" title="Fotoğrafı büyütmek için tıklayın">` : '';
             
             const newAdminPost = document.createElement('div');
             newAdminPost.className = 'post-item';
@@ -2019,8 +2014,8 @@ Token'ınızı aşağıya yapıştırın:`;
             newAdminPost.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div style="flex: 1;">
-                        <h4>${safeTextContent(fixedTitle)}</h4>
-                        <p style="color: #7f8c8d; font-size: 0.9rem;">${safeTextContent(fixedDate)} - ${safeTextContent(fixedAuthor)}</p>
+                        <h4>${safeTextContent(blog.title)}</h4>
+                        <p style="color: #7f8c8d; font-size: 0.9rem;">${safeTextContent(blog.date)} - ${safeTextContent(blog.author)}</p>
                         <div class="post-actions">
                             <button type="button" class="btn" style="margin-right: 0.5rem; background: #17a2b8; color: white;" onclick="showBlogJSON('${blog.id}')">📋 JSON Görüntüle</button>
                             <button type="button" class="btn btn-danger" onclick="deleteBlogInstructions('${blog.id}')">🗑️ Manuel Sil</button>
@@ -2131,25 +2126,15 @@ Token'ınızı aşağıya yapıştırın:`;
             }
         }
 
-        // Blog JSON'unu göster - TÜRKÇE KARAKTER SORUNU DÜZELTİLMİŞ
+        // Blog JSON'unu göster - ESKİ HAL
         function showBlogJSON(blogId) {
             fetch('blogs.json?v=' + Date.now())
-                .then(response => response.text())
-                .then(textData => JSON.parse(textData))
+                .then(response => response.json())
                 .then(data => {
                     const blog = data.posts.find(b => b.id === blogId);
                     if (blog) {
-                        // Türkçe karakterleri düzelt
-                        const fixedBlog = {
-                            ...blog,
-                            title: fixTurkishChars(blog.title),
-                            content: fixTurkishChars(blog.content),
-                            date: fixTurkishChars(blog.date),
-                            author: fixTurkishChars(blog.author)
-                        };
-                        
-                        const jsonText = JSON.stringify(fixedBlog, null, 2);
-                        showCopyModal(jsonText, 'Blog JSON Verisi (Düzeltilmiş)');
+                        const jsonText = JSON.stringify(blog, null, 2);
+                        showCopyModal(jsonText, 'Blog JSON Verisi');
                     }
                 })
                 .catch(error => {
@@ -2157,16 +2142,14 @@ Token'ınızı aşağıya yapıştırın:`;
                 });
         }
 
-        // Blog silme talimatları - TÜRKÇE KARAKTER SORUNU DÜZELTİLMİŞ
+        // Blog silme talimatları - ESKİ HAL
         function deleteBlogInstructions(blogId) {
             fetch('blogs.json?v=' + Date.now())
-                .then(response => response.text())
-                .then(textData => JSON.parse(textData))
+                .then(response => response.json())
                 .then(data => {
                     const blog = data.posts.find(b => b.id === blogId);
                     if (blog) {
-                        const fixedTitle = fixTurkishChars(blog.title);
-                        const confirmed = confirm(`"${fixedTitle}" adlı blog yazısını silmek istediğinizden emin misiniz?\n\nBu işlem manuel olarak blogs.json dosyasını düzenlemenizi gerektirir.`);
+                        const confirmed = confirm(`"${blog.title}" adlı blog yazısını silmek istediğinizden emin misiniz?\n\nBu işlem manuel olarak blogs.json dosyasını düzenlemenizi gerektirir.`);
                         if (confirmed) {
                             showDeleteInstructionsModal(blog);
                         }
@@ -2177,10 +2160,8 @@ Token'ınızı aşağıya yapıştırın:`;
                 });
         }
 
-        // Silme talimatları modalı - TÜRKÇE KARAKTER SORUNU DÜZELTİLMİŞ
+        // Silme talimatları modalı - ESKİ HAL
         function showDeleteInstructionsModal(blog) {
-            const fixedTitle = fixTurkishChars(blog.title);
-            
             const modal = document.createElement('div');
             modal.style.cssText = `
                 position: fixed;
@@ -2207,7 +2188,7 @@ Token'ınızı aşağıya yapıştırın:`;
                 ">
                     <h3 style="margin-bottom: 1rem; color: #dc3545;">🗑️ Blog Silme Talimatları</h3>
                     <p style="margin-bottom: 1rem; color: #666;">
-                        <strong>"${safeTextContent(fixedTitle)}"</strong> adlı blog yazısını silmek için aşağıdaki adımları takip edin:
+                        <strong>"${safeTextContent(blog.title)}"</strong> adlı blog yazısını silmek için aşağıdaki adımları takip edin:
                     </p>
                     
                     <div style="background: #f8d7da; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #dc3545;">
