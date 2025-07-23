@@ -1848,11 +1848,11 @@ Token'ınızı aşağıya yapıştırın:`;
             submitBtn.innerHTML = '⏳ Yayınlanıyor...';
 
             try {
-                // Blog objesi oluştur
+                // Blog objesi oluştur - UTF-8 güvenli
                 const blog = {
                     id: `blog-${Date.now()}`,
-                    title: title.trim(),
-                    content: content.trim(),
+                    title: title.trim().normalize('NFC'), // Unicode normalizasyonu
+                    content: content.trim().normalize('NFC'),
                     imageUrl: imageUrl,
                     date: new Date().toLocaleDateString('tr-TR'),
                     author: 'Admin',
@@ -1891,12 +1891,36 @@ Token'ınızı aşağıya yapıştırın:`;
         // JSON dosyasından blog'ları yükle - TÜRKÇE KARAKTER DESTEKLİ
         async function loadBlogsFromJSON() {
             try {
-                const response = await fetch('blogs.json?v=' + Date.now());
+                const response = await fetch('blogs.json?v=' + Date.now(), {
+                    headers: {
+                        'Content-Type': 'application/json; charset=utf-8'
+                    }
+                });
                 if (!response.ok) {
                     throw new Error('Blog dosyası yüklenemedi');
                 }
                 
-                const data = await response.json();
+                // Response'u arrayBuffer olarak al, sonra UTF-8 decode et
+                const arrayBuffer = await response.arrayBuffer();
+                const decoder = new TextDecoder('utf-8');
+                const textData = decoder.decode(arrayBuffer);
+                let data;
+                
+                try {
+                    // JSON'u UTF-8 olarak parse et
+                    data = JSON.parse(textData);
+                } catch (parseError) {
+                    console.error('JSON parse hatası:', parseError);
+                    // Fallback: Normal text olarak okuma denemesi
+                    try {
+                        const fallbackResponse = await fetch('blogs.json?v=' + Date.now());
+                        const fallbackText = await fallbackResponse.text();
+                        data = JSON.parse(fallbackText);
+                    } catch (fallbackError) {
+                        throw new Error('JSON parse hatası');
+                    }
+                }
+                
                 let blogs = [];
                 
                 // JSON formatını kontrol et
@@ -1941,7 +1965,7 @@ Token'ınızı aşağıya yapıştırın:`;
             }
         }
 
-        // Sayfaya blog ekle - TÜRKÇE KARAKTER DESTEKLİ
+        // Sayfaya blog ekle - TÜRKÇE KARAKTER SORUNU DÜZELTİLMİŞ
         function addBlogToPage(blog) {
             const blogPosts = document.getElementById('blog-posts');
             if (!blogPosts) return;
@@ -1950,18 +1974,24 @@ Token'ınızı aşağıya yapıştırın:`;
             newPost.className = 'blog-post';
             newPost.setAttribute('data-id', blog.id);
             
-            const previewText = blog.content.substring(0, 150) + (blog.content.length > 150 ? '...' : '');
-            const showReadMore = blog.content.length > 150;
+            // Türkçe karakterleri düzelt
+            const fixedTitle = fixTurkishChars(blog.title);
+            const fixedContent = fixTurkishChars(blog.content);
+            const fixedDate = fixTurkishChars(blog.date);
+            const fixedAuthor = fixTurkishChars(blog.author);
+            
+            const previewText = fixedContent.substring(0, 150) + (fixedContent.length > 150 ? '...' : '');
+            const showReadMore = fixedContent.length > 150;
             const imageHtml = blog.imageUrl ? 
-                `<img src="${blog.imageUrl}" alt="${safeTextContent(blog.title)}" onclick="openImageModal('${blog.imageUrl}', '${safeTextContent(blog.title)}')" title="Fotoğrafı büyütmek için tıklayın" onerror="this.style.display='none';">` : '';
+                `<img src="${blog.imageUrl}" alt="${safeTextContent(fixedTitle)}" onclick="openImageModal('${blog.imageUrl}', '${safeTextContent(fixedTitle)}')" title="Fotoğrafı büyütmek için tıklayın" onerror="this.style.display='none';">` : '';
             
             newPost.innerHTML = `
                 <div class="blog-post-content">
                     ${imageHtml}
-                    <h3>${safeTextContent(blog.title)}</h3>
-                    <div class="blog-post-meta">${safeTextContent(blog.date)} - ${safeTextContent(blog.author)}</div>
+                    <h3>${safeTextContent(fixedTitle)}</h3>
+                    <div class="blog-post-meta">${safeTextContent(fixedDate)} - ${safeTextContent(fixedAuthor)}</div>
                     <p class="blog-preview">${safeTextContent(previewText)}</p>
-                    <div class="full-content" style="display:none;">${safeTextContent(blog.content)}</div>
+                    <div class="full-content" style="display:none;">${safeTextContent(fixedContent)}</div>
                     ${showReadMore ? `<a href="#" class="read-more-link" onclick="showFullPost('${blog.id}'); return false;">Devamını Oku &rarr;</a>` : ''}
                 </div>
             `;
@@ -1969,13 +1999,18 @@ Token'ınızı aşağıya yapıştırın:`;
             blogPosts.appendChild(newPost);
         }
 
-        // Admin paneline blog ekle - TÜRKÇE KARAKTER DESTEKLİ
+        // Admin paneline blog ekle - TÜRKÇE KARAKTER SORUNU DÜZELTİLMİŞ
         function addBlogToAdminPanel(blog) {
             const adminList = document.getElementById('admin-blog-list');
             if (!adminList) return;
             
+            // Türkçe karakterleri düzelt
+            const fixedTitle = fixTurkishChars(blog.title);
+            const fixedDate = fixTurkishChars(blog.date);
+            const fixedAuthor = fixTurkishChars(blog.author);
+            
             const adminImageHtml = blog.imageUrl ? 
-                `<img src="${blog.imageUrl}" alt="${safeTextContent(blog.title)}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; float: right; cursor: pointer;" onclick="openImageModal('${blog.imageUrl}', '${safeTextContent(blog.title)}')" title="Fotoğrafı büyütmek için tıklayın">` : '';
+                `<img src="${blog.imageUrl}" alt="${safeTextContent(fixedTitle)}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; float: right; cursor: pointer;" onclick="openImageModal('${blog.imageUrl}', '${safeTextContent(fixedTitle)}')" title="Fotoğrafı büyütmek için tıklayın">` : '';
             
             const newAdminPost = document.createElement('div');
             newAdminPost.className = 'post-item';
@@ -1984,8 +2019,8 @@ Token'ınızı aşağıya yapıştırın:`;
             newAdminPost.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div style="flex: 1;">
-                        <h4>${safeTextContent(blog.title)}</h4>
-                        <p style="color: #7f8c8d; font-size: 0.9rem;">${safeTextContent(blog.date)} - ${safeTextContent(blog.author)}</p>
+                        <h4>${safeTextContent(fixedTitle)}</h4>
+                        <p style="color: #7f8c8d; font-size: 0.9rem;">${safeTextContent(fixedDate)} - ${safeTextContent(fixedAuthor)}</p>
                         <div class="post-actions">
                             <button type="button" class="btn" style="margin-right: 0.5rem; background: #17a2b8; color: white;" onclick="showBlogJSON('${blog.id}')">📋 JSON Görüntüle</button>
                             <button type="button" class="btn btn-danger" onclick="deleteBlogInstructions('${blog.id}')">🗑️ Manuel Sil</button>
@@ -2007,28 +2042,114 @@ Token'ınızı aşağıya yapıştırın:`;
             return div.innerHTML;
         }
 
-        // Türkçe karakter güvenli metin işleme
+        // Türkçe karakter güvenli metin işleme - GÜNCELLENMİŞ
         function safeTextContent(text) {
             if (!text) return '';
             
-            // Türkçe karakterleri koruyarak HTML escape
-            return text
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#x27;');
+            try {
+                // Önce bozuk UTF-8 karakterleri düzelt
+                let fixedText = fixTurkishChars(text);
+                
+                // HTML escape işlemi
+                const div = document.createElement('div');
+                div.textContent = fixedText;
+                return div.innerHTML;
+            } catch (error) {
+                console.error('safeTextContent hatası:', error);
+                // Fallback: Basit HTML escape
+                return text
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#x27;');
+            }
         }
 
-        // Blog JSON'unu göster
+        // Alternatif güvenli metin işleme fonksiyonu - KAPSAMLI DÜZELTME
+        function fixTurkishChars(text) {
+            if (!text) return '';
+            
+            try {
+                // Yaygın bozuk karakter eşleştirmeleri - genişletilmiş
+                const charMap = {
+                    // Küçük harfler
+                    'Ã§': 'ç',
+                    'Ã¶': 'ö',
+                    'Ã¼': 'ü',
+                    'Ä±': 'ı',
+                    'Å': 'ş',
+                    'Ä': 'ğ',
+                    'Ã¢': 'â',
+                    'Ã®': 'î',
+                    'Ã´': 'ô',
+                    'Ã»': 'û',
+                    
+                    // Büyük harfler
+                    'Ä°': 'İ',
+                    'Ã‡': 'Ç',
+                    'Ã–': 'Ö',
+                    'Ãœ': 'Ü',
+                    'Åž': 'Ş',
+                    'ÄŸ': 'ğ',
+                    'Ä': 'Ğ',
+                    
+                    // Çift karakter kombinasyonları
+                    'Ä°nsanoÄ': 'İnsanoğ',
+                    'baÅlangÄ±cÄ±': 'başlangıcı',
+                    'yaÅamÄ±n': 'yaşamın',
+                    'anlaÅÄ±lamayan': 'anlaşılamayan',
+                    'etmiÅ': 'etmiş',
+                    'gÃ¶kyÃ¼zÃ¼n': 'gökyüzün',
+                    'Ã¼lkemiz': 'ülkemiz',
+                    'Ã§ocuk': 'çocuk',
+                    'iÃ§in': 'için',
+                    'Ã¶ÄrenmÄ±': 'öğrenmiş',
+                    'Ã¶ncelik': 'öncelik'
+                };
+                
+                let fixedText = text;
+                Object.keys(charMap).forEach(key => {
+                    fixedText = fixedText.replace(new RegExp(key, 'g'), charMap[key]);
+                });
+                
+                // Genel UTF-8 düzeltme
+                try {
+                    // Eğer hala bozuk karakterler varsa, genel decode denemesi
+                    if (fixedText.includes('Ã') || fixedText.includes('Å') || fixedText.includes('Ä')) {
+                        const decoded = decodeURIComponent(escape(fixedText));
+                        return decoded;
+                    }
+                } catch (decodeError) {
+                    console.log('Decode denemesi başarısız:', decodeError);
+                }
+                
+                return fixedText;
+            } catch (error) {
+                console.error('Türkçe karakter düzeltme hatası:', error);
+                return text;
+            }
+        }
+
+        // Blog JSON'unu göster - TÜRKÇE KARAKTER SORUNU DÜZELTİLMİŞ
         function showBlogJSON(blogId) {
             fetch('blogs.json?v=' + Date.now())
-                .then(response => response.json())
+                .then(response => response.text())
+                .then(textData => JSON.parse(textData))
                 .then(data => {
                     const blog = data.posts.find(b => b.id === blogId);
                     if (blog) {
-                        const jsonText = JSON.stringify(blog, null, 2);
-                        showCopyModal(jsonText, 'Blog JSON Verisi');
+                        // Türkçe karakterleri düzelt
+                        const fixedBlog = {
+                            ...blog,
+                            title: fixTurkishChars(blog.title),
+                            content: fixTurkishChars(blog.content),
+                            date: fixTurkishChars(blog.date),
+                            author: fixTurkishChars(blog.author)
+                        };
+                        
+                        const jsonText = JSON.stringify(fixedBlog, null, 2);
+                        showCopyModal(jsonText, 'Blog JSON Verisi (Düzeltilmiş)');
                     }
                 })
                 .catch(error => {
@@ -2036,14 +2157,16 @@ Token'ınızı aşağıya yapıştırın:`;
                 });
         }
 
-        // Blog silme talimatları
+        // Blog silme talimatları - TÜRKÇE KARAKTER SORUNU DÜZELTİLMİŞ
         function deleteBlogInstructions(blogId) {
             fetch('blogs.json?v=' + Date.now())
-                .then(response => response.json())
+                .then(response => response.text())
+                .then(textData => JSON.parse(textData))
                 .then(data => {
                     const blog = data.posts.find(b => b.id === blogId);
                     if (blog) {
-                        const confirmed = confirm(`"${blog.title}" adlı blog yazısını silmek istediğinizden emin misiniz?\n\nBu işlem manuel olarak blogs.json dosyasını düzenlemenizi gerektirir.`);
+                        const fixedTitle = fixTurkishChars(blog.title);
+                        const confirmed = confirm(`"${fixedTitle}" adlı blog yazısını silmek istediğinizden emin misiniz?\n\nBu işlem manuel olarak blogs.json dosyasını düzenlemenizi gerektirir.`);
                         if (confirmed) {
                             showDeleteInstructionsModal(blog);
                         }
@@ -2054,8 +2177,10 @@ Token'ınızı aşağıya yapıştırın:`;
                 });
         }
 
-        // Silme talimatları modalı
+        // Silme talimatları modalı - TÜRKÇE KARAKTER SORUNU DÜZELTİLMİŞ
         function showDeleteInstructionsModal(blog) {
+            const fixedTitle = fixTurkishChars(blog.title);
+            
             const modal = document.createElement('div');
             modal.style.cssText = `
                 position: fixed;
@@ -2082,7 +2207,7 @@ Token'ınızı aşağıya yapıştırın:`;
                 ">
                     <h3 style="margin-bottom: 1rem; color: #dc3545;">🗑️ Blog Silme Talimatları</h3>
                     <p style="margin-bottom: 1rem; color: #666;">
-                        <strong>"${safeTextContent(blog.title)}"</strong> adlı blog yazısını silmek için aşağıdaki adımları takip edin:
+                        <strong>"${safeTextContent(fixedTitle)}"</strong> adlı blog yazısını silmek için aşağıdaki adımları takip edin:
                     </p>
                     
                     <div style="background: #f8d7da; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #dc3545;">
@@ -2245,7 +2370,7 @@ Token'ınızı aşağıya yapıştırın:`;
             `;
         }
 
-        // Tam blog yazısını göster
+        // Tam blog yazısını göster - TÜRKÇE KARAKTER SORUNU DÜZELTİLMİŞ
         function showFullPost(postId) {
             const post = document.querySelector(`[data-id="${postId}"]`);
             if (!post) return;
@@ -2253,6 +2378,11 @@ Token'ınızı aşağıya yapıştırın:`;
             const title = post.querySelector('h3').textContent;
             const meta = post.querySelector('.blog-post-meta').textContent;
             const fullContent = post.querySelector('.full-content').textContent;
+            
+            // Türkçe karakterleri düzelt
+            const fixedTitle = fixTurkishChars(title);
+            const fixedMeta = fixTurkishChars(meta);
+            const fixedContent = fixTurkishChars(fullContent);
             
             // Tam yazı modalı oluştur
             const modal = document.createElement('div');
@@ -2284,8 +2414,8 @@ Token'ınızı aşağıya yapıştırın:`;
                 ">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
                         <div style="flex: 1;">
-                            <h2 style="color: #2c3e50; margin: 0; font-size: 1.8rem;">${safeTextContent(title)}</h2>
-                            <p style="color: #7f8c8d; margin: 0.5rem 0 0 0; font-size: 0.95rem;">${safeTextContent(meta)}</p>
+                            <h2 style="color: #2c3e50; margin: 0; font-size: 1.8rem;">${safeTextContent(fixedTitle)}</h2>
+                            <p style="color: #7f8c8d; margin: 0.5rem 0 0 0; font-size: 0.95rem;">${safeTextContent(fixedMeta)}</p>
                         </div>
                         <button onclick="closeFullPost()" style="
                             background: #e74c3c;
@@ -2309,7 +2439,7 @@ Token'ınızı aşağıya yapıştırın:`;
                         color: #2c3e50;
                         text-align: justify;
                         white-space: pre-wrap;
-                    ">${safeTextContent(fullContent)}</div>
+                    ">${safeTextContent(fixedContent)}</div>
                 </div>
             `;
             
